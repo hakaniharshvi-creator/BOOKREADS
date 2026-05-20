@@ -1,0 +1,2353 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>BookRead — Your Reading Life</title>
+
+  <!-- Bootstrap 5 -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"/>
+  <!-- Bootstrap Icons -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet"/>
+  <!-- Google Fonts: Playfair Display + Lato -->
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400;1,700&family=Lato:wght@300;400;700&display=swap" rel="stylesheet"/>
+  <!-- jQuery -->
+  <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+
+  <style>
+    :root {
+      --cream: #f4f1ea;
+      --brown: #382110;
+      --brown-mid: #5a3e28;
+      --amber: #c9902c;
+      --amber-light: #f0d9b5;
+      --green: #409153;
+      --green-light: #d7edde;
+      --red: #c0392b;
+      --border: #d6d0c4;
+      --text-muted: #767676;
+      --white: #ffffff;
+      --shadow: 0 2px 8px rgba(56,33,16,0.12);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      font-family: 'Lato', sans-serif;
+      background: var(--cream);
+      color: var(--brown);
+      font-size: 0.95rem;
+    }
+
+    h1,h2,h3,h4,h5,.serif { font-family: 'Playfair Display', serif; }
+
+    /* ─── NAVBAR ─── */
+    .navbar-bookread {
+      background: var(--brown);
+      padding: 0;
+      border-bottom: 3px solid var(--amber);
+      position: sticky; top: 0; z-index: 1050;
+    }
+    .navbar-bookread .navbar-brand {
+      font-family: 'Playfair Display', serif;
+      font-style: italic;
+      font-size: 1.6rem;
+      color: var(--amber) !important;
+      padding: 0.6rem 1rem;
+      letter-spacing: 0.02em;
+    }
+    .navbar-bookread .nav-link {
+      color: rgba(244,241,234,0.85) !important;
+      font-size: 0.88rem;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      padding: 1rem 0.9rem !important;
+      transition: color .2s, background .2s;
+    }
+    .navbar-bookread .nav-link:hover,
+    .navbar-bookread .nav-link.active {
+      color: var(--amber) !important;
+      background: rgba(201,144,44,0.1);
+    }
+    .navbar-search input {
+      background: rgba(255,255,255,0.1);
+      border: 1px solid rgba(255,255,255,0.2);
+      color: #fff;
+      border-radius: 3px 0 0 3px;
+      font-size: 0.85rem;
+      width: 200px;
+    }
+    .navbar-search input::placeholder { color: rgba(255,255,255,0.5); }
+    .navbar-search input:focus {
+      background: rgba(255,255,255,0.15);
+      box-shadow: none;
+      border-color: var(--amber);
+      color: #fff;
+    }
+    .navbar-search .btn {
+      background: var(--amber);
+      border: none;
+      color: var(--brown);
+      border-radius: 0 3px 3px 0;
+      font-weight: 700;
+    }
+    .btn-auth {
+      background: var(--amber);
+      color: var(--brown);
+      font-weight: 700;
+      font-size: 0.82rem;
+      border: none;
+      border-radius: 3px;
+      padding: 0.35rem 0.9rem;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      transition: background .2s;
+    }
+    .btn-auth:hover { background: #b8821e; color: var(--brown); }
+
+    /* ─── SMOOTH PAGE TRANSITIONS ─── */
+    .page-section { display: none; opacity: 0; transform: translateY(12px); }
+    .page-section.active { display: block; animation: pageIn .35s ease forwards; }
+    @keyframes pageIn { to { opacity:1; transform:translateY(0); } }
+
+    /* ─── SCROLL REVEAL ─── */
+    .reveal { opacity:0; transform:translateY(24px); transition: opacity .5s ease, transform .5s ease; }
+    .reveal.visible { opacity:1; transform:translateY(0); }
+
+    /* ─── RIPPLE BUTTON ─── */
+    .btn-bookread, .btn-amber, .btn-auth, .btn-outline-brown {
+      position: relative; overflow: hidden;
+    }
+    .ripple {
+      position: absolute; border-radius: 50%; background: rgba(255,255,255,.35);
+      transform: scale(0); animation: rippleAnim .55s linear;
+      pointer-events: none;
+    }
+    @keyframes rippleAnim { to { transform:scale(4); opacity:0; } }
+
+    /* ─── NAVBAR GLOW ON SCROLL ─── */
+    .navbar-bookread.scrolled {
+      box-shadow: 0 4px 20px rgba(56,33,16,0.35);
+    }
+
+    /* ─── HERO ANIMATED BACKGROUND ─── */
+    .hero {
+      background: linear-gradient(135deg, var(--brown) 0%, var(--brown-mid) 60%, #6b3a1f 100%);
+      background-size: 200% 200%;
+      animation: heroBg 8s ease infinite;
+    }
+    @keyframes heroBg {
+      0%   { background-position: 0% 50%; }
+      50%  { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+    /* Floating books in hero background */
+    .hero-float {
+      position: absolute; font-size: 3rem; opacity: .05;
+      animation: floatUp 12s ease-in-out infinite;
+      pointer-events: none; user-select: none;
+    }
+    @keyframes floatUp {
+      0%   { transform: translateY(0) rotate(-5deg); }
+      50%  { transform: translateY(-30px) rotate(5deg); }
+      100% { transform: translateY(0) rotate(-5deg); }
+    }
+
+    /* ─── BOOK CARD UPGRADES ─── */
+    .book-card {
+      border-radius: 8px;
+      border: none;
+      box-shadow: 0 2px 12px rgba(56,33,16,0.10);
+      transition: transform .28s cubic-bezier(.34,1.56,.64,1), box-shadow .28s ease;
+      cursor: pointer;
+    }
+    .book-card:hover {
+      transform: translateY(-8px) scale(1.02);
+      box-shadow: 0 16px 36px rgba(56,33,16,0.22);
+    }
+    /* Shimmer loading effect on covers */
+    .book-cover-placeholder {
+      position: relative; overflow: hidden;
+    }
+    .book-cover-placeholder::after {
+      content: ''; position: absolute; inset: 0;
+      background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,.08) 50%, transparent 100%);
+      background-size: 200% 100%;
+      animation: shimmer 2s infinite;
+    }
+    @keyframes shimmer { 0%{background-position:-200% 0} 100%{background-position:200% 0} }
+
+    /* ─── SIDEBAR WIDGET UPGRADES ─── */
+    .sidebar-widget {
+      border-radius: 8px;
+      border: none;
+      box-shadow: 0 2px 10px rgba(56,33,16,0.08);
+      transition: box-shadow .2s;
+    }
+    .sidebar-widget:hover { box-shadow: 0 4px 18px rgba(56,33,16,0.14); }
+    .widget-header {
+      border-radius: 8px 8px 0 0;
+      letter-spacing: 0.06em;
+    }
+
+    /* ─── SECTION TITLE UNDERLINE ANIMATION ─── */
+    .section-title {
+      position: relative;
+      border-bottom: none;
+      padding-bottom: 0.6rem;
+    }
+    .section-title::after {
+      content: '';
+      position: absolute; bottom: 0; left: 0;
+      height: 2px; width: 0;
+      background: var(--amber);
+      transition: width .6s ease;
+    }
+    .section-title.visible::after { width: 60px; }
+
+    /* ─── HERO STATS COUNTER STYLE ─── */
+    .about-stat {
+      border-radius: 8px;
+      border: none;
+      box-shadow: 0 2px 10px rgba(56,33,16,0.08);
+      transition: transform .2s, box-shadow .2s;
+    }
+    .about-stat:hover { transform: translateY(-4px); box-shadow: 0 8px 20px rgba(56,33,16,0.15); }
+
+    /* ─── REVIEW CARD UPGRADES ─── */
+    .review-card {
+      border-radius: 8px;
+      border: none;
+      box-shadow: 0 2px 10px rgba(56,33,16,0.08);
+    }
+    .review-card:hover { box-shadow: 0 6px 20px rgba(56,33,16,0.14); }
+
+    /* ─── CRUD SECTION UPGRADES ─── */
+    .crud-section {
+      border-radius: 10px;
+      box-shadow: 0 2px 12px rgba(56,33,16,0.09);
+      border: none;
+    }
+
+    /* ─── TEAM CARD HOVER ─── */
+    .team-card {
+      border-radius: 10px;
+      border: none;
+      box-shadow: 0 2px 10px rgba(56,33,16,0.08);
+      transition: transform .25s ease, box-shadow .25s ease;
+    }
+    .team-card:hover { transform: translateY(-5px); box-shadow: 0 10px 28px rgba(56,33,16,0.16); }
+    .team-avatar { transition: transform .25s ease; }
+    .team-card:hover .team-avatar { transform: scale(1.08); }
+
+    /* ─── NAVBAR LINK UNDERLINE SLIDE ─── */
+    .navbar-bookread .nav-link {
+      position: relative;
+    }
+    .navbar-bookread .nav-link::after {
+      content: ''; position: absolute; bottom: 0; left: 50%; right: 50%;
+      height: 2px; background: var(--amber);
+      transition: left .2s ease, right .2s ease;
+    }
+    .navbar-bookread .nav-link:hover::after,
+    .navbar-bookread .nav-link.active::after { left: 12px; right: 12px; }
+
+    /* ─── TABLE ROW SLIDE IN ─── */
+    .table-bookread tbody tr {
+      transition: background .15s;
+      animation: rowIn .3s ease both;
+    }
+    @keyframes rowIn { from{opacity:0;transform:translateX(-8px)} to{opacity:1;transform:translateX(0)} }
+
+    /* ─── QUOTE BLOCK ─── */
+    .quote-block {
+      border-left: 4px solid var(--amber);
+      transition: border-color .3s;
+      border-radius: 0 4px 4px 0;
+    }
+    .quote-block:hover { border-color: var(--green); }
+
+    /* ─── SHELF TAG HOVER BOUNCE ─── */
+    .shelf-tag {
+      transition: background .15s, transform .15s;
+      border-radius: 4px;
+    }
+    .shelf-tag:hover { transform: translateY(-2px); }
+
+    /* ─── TOAST NOTIFICATION ─── */
+    .br-toast {
+      position: fixed; bottom: 24px; right: 24px; z-index: 9999;
+      background: var(--brown); color: var(--cream);
+      padding: .75rem 1.2rem; border-radius: 8px;
+      box-shadow: 0 8px 28px rgba(0,0,0,.25);
+      font-size: .88rem; font-weight: 600;
+      display: flex; align-items: center; gap: .6rem;
+      border-left: 4px solid var(--amber);
+      transform: translateY(80px); opacity: 0;
+      transition: transform .35s cubic-bezier(.34,1.56,.64,1), opacity .3s;
+      max-width: 320px;
+    }
+    .br-toast.show { transform: translateY(0); opacity: 1; }
+
+    /* ─── READING PROGRESS BAR ─── */
+    .reading-progress-bar { transition: width .8s cubic-bezier(.4,0,.2,1); }
+
+    /* ─── GENRE PILL HOVER ─── */
+    .genre-pill {
+      transition: transform .15s, opacity .15s;
+    }
+    .genre-pill:hover { transform: scale(1.1); opacity:.85; cursor:pointer; }
+
+    /* ─── SCROLL TO TOP BUTTON ─── */
+    #scrollTopBtn {
+      position: fixed; bottom: 24px; left: 24px; z-index: 999;
+      width: 40px; height: 40px; border-radius: 50%;
+      background: var(--brown); color: var(--amber);
+      border: 2px solid var(--amber); font-size: 1rem;
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer; opacity: 0; transform: scale(0);
+      transition: opacity .3s, transform .3s;
+      box-shadow: var(--shadow);
+    }
+    #scrollTopBtn.visible { opacity: 1; transform: scale(1); }
+    #scrollTopBtn:hover { background: var(--amber); color: var(--brown); }
+
+    /* ─── LOADING SKELETON ─── */
+    .skeleton {
+      background: linear-gradient(90deg, var(--border) 25%, var(--amber-light) 50%, var(--border) 75%);
+      background-size: 200% 100%;
+      animation: skeletonAnim 1.4s infinite;
+      border-radius: 4px;
+    }
+    @keyframes skeletonAnim { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
+
+    /* ─── HERO SEARCH BAR ─── */
+    .hero-search {
+      display: flex; max-width: 480px;
+      background: rgba(255,255,255,.12);
+      border: 1px solid rgba(255,255,255,.25);
+      border-radius: 6px; overflow: hidden;
+      backdrop-filter: blur(8px);
+      transition: box-shadow .2s, background .2s;
+    }
+    .hero-search:focus-within {
+      background: rgba(255,255,255,.18);
+      box-shadow: 0 0 0 3px rgba(201,144,44,.4);
+    }
+    .hero-search input {
+      background: transparent; border: none; color: #fff;
+      padding: .65rem 1rem; flex: 1; font-size: .95rem;
+    }
+    .hero-search input::placeholder { color: rgba(255,255,255,.55); }
+    .hero-search input:focus { outline: none; box-shadow: none; }
+    .hero-search button {
+      background: var(--amber); border: none;
+      padding: .65rem 1.2rem; color: var(--brown);
+      font-weight: 700; font-size: .9rem; cursor: pointer;
+      transition: background .2s;
+    }
+    .hero-search button:hover { background: #b8821e; }
+
+    /* ─── PAGE SECTION (override old simple show/hide) ─── */
+
+    /* ─── HERO ─── */
+    .hero {
+      background: linear-gradient(135deg, var(--brown) 0%, var(--brown-mid) 100%);
+      color: var(--cream);
+      padding: 4rem 0 3rem;
+      position: relative;
+      overflow: hidden;
+    }
+    .hero::after {
+      content: '';
+      position: absolute;
+      bottom: -1px; left: 0; right: 0;
+      height: 40px;
+      background: var(--cream);
+      clip-path: ellipse(55% 100% at 50% 100%);
+    }
+    .hero h1 {
+      font-size: clamp(2rem, 5vw, 3.5rem);
+      font-style: italic;
+      line-height: 1.15;
+      color: var(--amber-light);
+    }
+    .hero p { color: rgba(244,241,234,0.8); font-size: 1.05rem; }
+    .hero-badge {
+      background: var(--amber);
+      color: var(--brown);
+      font-weight: 700;
+      font-size: 0.75rem;
+      padding: 0.25rem 0.7rem;
+      border-radius: 2px;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+
+    /* ─── CARDS ─── */
+    .book-card {
+      background: var(--white);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      box-shadow: var(--shadow);
+      transition: transform .2s, box-shadow .2s;
+      overflow: hidden;
+      height: 100%;
+    }
+    .book-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 8px 24px rgba(56,33,16,0.18);
+    }
+    .book-cover {
+      width: 100%;
+      height: 180px;
+      object-fit: cover;
+      display: block;
+    }
+    .book-cover-placeholder {
+      width: 100%;
+      height: 180px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 3rem;
+      font-family: 'Playfair Display', serif;
+      font-style: italic;
+      color: rgba(255,255,255,0.6);
+    }
+    .book-card .card-body { padding: 0.9rem; }
+    .book-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 0.95rem;
+      font-weight: 700;
+      line-height: 1.3;
+      color: var(--brown);
+      margin-bottom: 0.2rem;
+    }
+    .book-author { color: var(--amber); font-size: 0.82rem; font-weight: 700; }
+    .star-rating { color: var(--amber); font-size: 0.85rem; }
+    .star-rating .empty { color: var(--border); }
+
+    /* ─── SIDEBAR ─── */
+    .sidebar-widget {
+      background: var(--white);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      margin-bottom: 1.2rem;
+      overflow: hidden;
+    }
+    .widget-header {
+      background: var(--brown);
+      color: var(--amber-light);
+      font-family: 'Playfair Display', serif;
+      font-size: 0.9rem;
+      font-weight: 700;
+      padding: 0.6rem 1rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    .widget-body { padding: 0.9rem; }
+
+    /* ─── BUTTONS ─── */
+    .btn-bookread {
+      background: var(--green);
+      color: #fff;
+      border: none;
+      border-radius: 3px;
+      font-weight: 700;
+      font-size: 0.82rem;
+      padding: 0.35rem 0.9rem;
+      transition: background .2s;
+    }
+    .btn-bookread:hover { background: #357a46; color: #fff; }
+    .btn-amber {
+      background: var(--amber);
+      color: var(--brown);
+      border: none;
+      border-radius: 3px;
+      font-weight: 700;
+      font-size: 0.82rem;
+      padding: 0.35rem 0.9rem;
+      transition: background .2s;
+    }
+    .btn-amber:hover { background: #b8821e; }
+    .btn-outline-brown {
+      border: 1px solid var(--brown);
+      color: var(--brown);
+      border-radius: 3px;
+      font-size: 0.82rem;
+      background: transparent;
+      font-weight: 700;
+      transition: all .2s;
+    }
+    .btn-outline-brown:hover { background: var(--brown); color: var(--cream); }
+
+    /* ─── SHELF TAGS ─── */
+    .shelf-tag {
+      display: inline-block;
+      background: var(--amber-light);
+      color: var(--brown-mid);
+      border: 1px solid var(--border);
+      border-radius: 2px;
+      font-size: 0.75rem;
+      padding: 0.15rem 0.5rem;
+      margin: 0.1rem;
+      cursor: pointer;
+      transition: background .15s;
+    }
+    .shelf-tag:hover, .shelf-tag.active { background: var(--amber); color: var(--brown); }
+
+    /* ─── TABLE ─── */
+    .table-bookread th {
+      background: var(--brown);
+      color: var(--amber-light);
+      font-family: 'Playfair Display', serif;
+      font-size: 0.85rem;
+      font-weight: 700;
+      border: none;
+    }
+    .table-bookread td { border-color: var(--border); vertical-align: middle; }
+    .table-bookread tbody tr:hover { background: var(--amber-light); }
+
+    /* ─── ALERTS ─── */
+    .alert-bookread-success {
+      background: var(--green-light);
+      border-left: 4px solid var(--green);
+      color: #1a4d29;
+      border-radius: 3px;
+    }
+    .alert-bookread-warning {
+      background: #fef3cd;
+      border-left: 4px solid var(--amber);
+      color: #7a5200;
+      border-radius: 3px;
+    }
+    .alert-bookread-danger {
+      background: #fde8e8;
+      border-left: 4px solid var(--red);
+      color: #6b1010;
+      border-radius: 3px;
+    }
+
+    /* ─── SECTION HEADERS ─── */
+    .section-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.3rem;
+      color: var(--brown);
+      border-bottom: 2px solid var(--amber);
+      padding-bottom: 0.4rem;
+      margin-bottom: 1.2rem;
+    }
+
+    /* ─── FORM STYLES ─── */
+    .form-control:focus, .form-select:focus {
+      border-color: var(--amber);
+      box-shadow: 0 0 0 0.2rem rgba(201,144,44,0.2);
+    }
+    .form-label { font-weight: 700; font-size: 0.85rem; color: var(--brown-mid); }
+    .invalid-feedback { font-size: 0.8rem; }
+
+    /* ─── MODAL ─── */
+    .modal-header-bookread {
+      background: var(--brown);
+      color: var(--amber-light);
+    }
+    .modal-header-bookread .modal-title {
+      font-family: 'Playfair Display', serif;
+      font-style: italic;
+    }
+    .modal-header-bookread .btn-close { filter: invert(1); }
+    .nav-tabs-auth .nav-link {
+      color: var(--brown-mid);
+      font-weight: 700;
+      font-size: 0.88rem;
+    }
+    .nav-tabs-auth .nav-link.active {
+      color: var(--brown);
+      border-bottom: 2px solid var(--amber);
+    }
+
+    /* ─── ABOUT PAGE ─── */
+    .about-stat {
+      text-align: center;
+      padding: 1.5rem;
+      background: var(--white);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+    }
+    .about-stat .stat-num {
+      font-family: 'Playfair Display', serif;
+      font-size: 2.5rem;
+      font-weight: 700;
+      color: var(--amber);
+      display: block;
+    }
+    .about-stat .stat-label { font-size: 0.82rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; }
+    .team-card {
+      background: var(--white);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 1.2rem;
+      text-align: center;
+    }
+    .team-avatar {
+      width: 70px; height: 70px;
+      border-radius: 50%;
+      background: var(--amber);
+      display: flex; align-items: center; justify-content: center;
+      margin: 0 auto 0.8rem;
+      font-family: 'Playfair Display', serif;
+      font-size: 1.5rem;
+      font-style: italic;
+      color: var(--brown);
+    }
+
+    /* ─── CRUD / ADMIN ─── */
+    .crud-section {
+      background: var(--white);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 1.5rem;
+      margin-bottom: 1.5rem;
+    }
+
+    /* ─── REVIEW CARDS ─── */
+    .review-card {
+      background: var(--white);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 1rem 1.1rem;
+      margin-bottom: 1rem;
+      display: flex;
+      gap: 1rem;
+      transition: box-shadow .2s;
+      animation: fadeInUp .35s ease both;
+    }
+    .review-card:hover { box-shadow: var(--shadow); }
+    .review-cover {
+      width: 64px;
+      height: 96px;
+      object-fit: cover;
+      border-radius: 3px;
+      flex-shrink: 0;
+      box-shadow: 0 2px 6px rgba(0,0,0,.2);
+    }
+    .review-cover-placeholder {
+      width: 64px;
+      height: 96px;
+      border-radius: 3px;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Playfair Display', serif;
+      font-style: italic;
+      font-size: 1.6rem;
+      color: rgba(255,255,255,.6);
+    }
+    .reviewer-avatar {
+      width: 32px; height: 32px;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 700; font-size: .85rem;
+      flex-shrink: 0;
+      color: #fff;
+    }
+    .review-body { flex: 1; min-width: 0; }
+    .review-book-title { font-family: 'Playfair Display', serif; font-weight: 700; font-size: .95rem; color: var(--brown); }
+    .review-text { font-size: .88rem; line-height: 1.6; color: var(--brown-mid); margin: .4rem 0; }
+    .review-meta { font-size: .75rem; color: var(--text-muted); }
+    .btn-delete-review {
+      background: none; border: none; color: var(--text-muted);
+      font-size: .8rem; padding: 0; cursor: pointer; transition: color .15s;
+    }
+    .btn-delete-review:hover { color: var(--red); }
+
+    /* ─── DARK MODE ─── */
+    body.dark-mode {
+      --cream: #1a1612;
+      --brown: #e8d5b7;
+      --brown-mid: #c9b99a;
+      --amber: #d4a045;
+      --amber-light: #2e2318;
+      --green: #5ab870;
+      --green-light: #1a2e20;
+      --border: #3a3028;
+      --text-muted: #9a9088;
+      --white: #252018;
+      --shadow: 0 2px 8px rgba(0,0,0,.4);
+    }
+    body.dark-mode .navbar-bookread { background: #0d0b08 !important; }
+    body.dark-mode .hero { background: linear-gradient(135deg, #0d0b08 0%, #1a1410 100%); }
+    body.dark-mode .modal-content { background: #252018; }
+    body.dark-mode .form-control, body.dark-mode .form-select {
+      background: #1a1612; color: var(--brown); border-color: var(--border);
+    }
+    body.dark-mode .form-control::placeholder { color: #5a5048; }
+    body.dark-mode .table { color: var(--brown); }
+    body.dark-mode .table-bookread tbody tr:hover { background: #2e2318; }
+    body.dark-mode footer { background: #0d0b08; }
+    body { transition: background .3s, color .3s; }
+
+    /* ─── REVIEW FORM ─── */
+    .star-input { display: flex; gap: 0.3rem; margin-bottom: 0.5rem; }
+    .star-input i {
+      font-size: 1.5rem;
+      color: var(--border);
+      cursor: pointer;
+      transition: color .15s;
+    }
+    .star-input i.selected, .star-input i:hover { color: var(--amber); }
+
+    /* ─── AJAX RESULTS ─── */
+    .user-card {
+      background: var(--white);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 1rem;
+      display: flex;
+      gap: 1rem;
+      align-items: center;
+      margin-bottom: 0.8rem;
+      transition: box-shadow .2s;
+    }
+    .user-card:hover { box-shadow: var(--shadow); }
+    .user-card img { width: 55px; height: 55px; border-radius: 50%; border: 2px solid var(--amber); }
+    .user-card .u-name { font-weight: 700; color: var(--brown); font-size: 0.9rem; }
+    .user-card .u-loc { font-size: 0.8rem; color: var(--text-muted); }
+
+    /* ─── DOM MANIPULATION ─── */
+    .toggle-panel {
+      background: var(--amber-light);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 1.2rem;
+      margin-top: 0.8rem;
+    }
+    .color-swatch {
+      width: 40px; height: 40px;
+      border-radius: 50%;
+      cursor: pointer;
+      border: 3px solid transparent;
+      transition: transform .15s, border-color .15s;
+    }
+    .color-swatch:hover, .color-swatch.active { transform: scale(1.15); border-color: var(--brown); }
+
+    /* ─── FOOTER ─── */
+    footer {
+      background: var(--brown);
+      color: rgba(244,241,234,0.7);
+      padding: 2.5rem 0 1.5rem;
+      margin-top: 3rem;
+      font-size: 0.85rem;
+    }
+    footer h6 {
+      font-family: 'Playfair Display', serif;
+      color: var(--amber-light);
+      font-size: 0.9rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 0.8rem;
+    }
+    footer a { color: rgba(244,241,234,0.6); text-decoration: none; display: block; margin-bottom: 0.3rem; }
+    footer a:hover { color: var(--amber); }
+    footer hr { border-color: rgba(255,255,255,0.1); }
+    .footer-brand {
+      font-family: 'Playfair Display', serif;
+      font-style: italic;
+      font-size: 1.4rem;
+      color: var(--amber);
+    }
+
+    /* ─── MISC ─── */
+    .genre-pill {
+      display: inline-block;
+      background: var(--brown);
+      color: var(--amber-light);
+      font-size: 0.75rem;
+      font-weight: 700;
+      padding: 0.15rem 0.6rem;
+      border-radius: 20px;
+      margin: 0.1rem;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+    .reading-progress { height: 6px; background: var(--border); border-radius: 3px; overflow: hidden; }
+    .reading-progress-bar { height: 100%; background: var(--amber); border-radius: 3px; transition: width .5s; }
+    .quote-block {
+      border-left: 4px solid var(--amber);
+      padding: 0.8rem 1.2rem;
+      background: var(--white);
+      font-style: italic;
+      font-family: 'Playfair Display', serif;
+      font-size: 1.05rem;
+      color: var(--brown-mid);
+      margin: 1rem 0;
+    }
+
+    /* Animations */
+    @keyframes fadeInUp {
+      from { opacity:0; transform:translateY(20px); }
+      to   { opacity:1; transform:translateY(0); }
+    }
+    .fade-up { animation: fadeInUp .4s ease both; }
+    .fade-up-d1 { animation-delay: .1s; }
+    .fade-up-d2 { animation-delay: .2s; }
+    .fade-up-d3 { animation-delay: .3s; }
+
+    @media (max-width: 767.98px) {
+      .hero { padding: 2.5rem 0 2.5rem; }
+      .hero h1 { font-size: 1.9rem; }
+      .navbar-search { display: none !important; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- Scroll to top -->
+<div id="scrollTopBtn" onclick="window.scrollTo({top:0,behavior:'smooth'})"><i class="bi bi-chevron-up"></i></div>
+<!-- Toast -->
+<div class="br-toast" id="brToast"></div>
+
+<!-- ════════════════════════════════════════════════════════
+     NAVBAR  (AIM 1 – Bootstrap typography/buttons + responsive)
+════════════════════════════════════════════════════════ -->
+<nav class="navbar navbar-bookread navbar-expand-lg">
+  <div class="container-fluid px-3">
+    <a class="navbar-brand" href="#">BookRead</a>
+    <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="mainNav">
+      <ul class="navbar-nav me-auto">
+        <li class="nav-item"><a class="nav-link active" href="#" data-page="home">Home</a></li>
+        <li class="nav-item"><a class="nav-link" href="#" data-page="browse">Browse</a></li>
+        <li class="nav-item"><a class="nav-link" href="#" data-page="mybooks">My Books</a></li>
+        <li class="nav-item"><a class="nav-link" href="#" data-page="community">Community</a></li>
+        <li class="nav-item"><a class="nav-link" href="#" data-page="about">About</a></li>
+      </ul>
+      <div class="d-flex align-items-center gap-2">
+        <div class="navbar-search d-flex">
+          <input class="form-control" id="navSearch" type="text" placeholder="Search books…"/>
+          <button class="btn" id="navSearchBtn"><i class="bi bi-search"></i></button>
+        </div>
+        <button class="btn-auth" data-bs-toggle="modal" data-bs-target="#authModal">Sign In</button>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<!-- ════════════════════════════════════════════════════════
+     HOME PAGE  (AIM 2 – Multi-column grid, responsive breakpoints)
+════════════════════════════════════════════════════════ -->
+<section id="page-home" class="page-section active">
+  <!-- Hero -->
+  <div class="hero">
+    <!-- Floating background books -->
+    <div class="hero-float" style="top:10%;left:5%;animation-delay:0s;">📚</div>
+    <div class="hero-float" style="top:60%;left:15%;animation-delay:2s;font-size:2rem;">📖</div>
+    <div class="hero-float" style="top:20%;right:8%;animation-delay:4s;">📕</div>
+    <div class="hero-float" style="top:70%;right:12%;animation-delay:1s;font-size:2rem;">📗</div>
+    <div class="hero-float" style="bottom:20%;left:40%;animation-delay:3s;font-size:1.5rem;">✨</div>
+    <div class="container" style="position:relative;z-index:1;">
+      <div class="row align-items-center g-4">
+        <div class="col-12 col-md-8 col-lg-7 fade-up">
+          <span class="hero-badge mb-3 d-inline-block">✦ Your Reading Life Starts Here</span>
+          <h1>Discover books<br/><em>you'll love.</em></h1>
+          <p class="mt-3">Track every book you've read, want to read, or are currently reading.<br class="d-none d-md-inline"/>Join 90 million readers on BookRead.</p>
+          <!-- Hero search -->
+          <div class="hero-search mt-4 mb-3">
+            <input id="heroSearchInput" type="text" placeholder="Search books, authors, genres…" onkeydown="if(event.key==='Enter'){heroSearch()}"/>
+            <button onclick="heroSearch()"><i class="bi bi-search me-1"></i>Search</button>
+          </div>
+          <div class="d-flex gap-2 flex-wrap mt-2">
+            <button class="btn-bookread px-4 py-2" data-bs-toggle="modal" data-bs-target="#authModal">Get Started — Free</button>
+            <button class="btn-outline-brown px-4 py-2" style="color:#f4f1ea;border-color:rgba(244,241,234,.4);" onclick="navigateTo('browse')">Browse Books</button>
+          </div>
+          <!-- Trending topics -->
+          <div class="mt-3 d-flex gap-2 flex-wrap align-items-center">
+            <small style="color:rgba(244,241,234,.5);">Trending:</small>
+            <span class="shelf-tag" style="background:rgba(255,255,255,.1);border-color:rgba(255,255,255,.2);color:rgba(244,241,234,.8);cursor:pointer;" onclick="quickBrowse('Fiction')">Fiction</span>
+            <span class="shelf-tag" style="background:rgba(255,255,255,.1);border-color:rgba(255,255,255,.2);color:rgba(244,241,234,.8);cursor:pointer;" onclick="quickBrowse('Mystery')">Mystery</span>
+            <span class="shelf-tag" style="background:rgba(255,255,255,.1);border-color:rgba(255,255,255,.2);color:rgba(244,241,234,.8);cursor:pointer;" onclick="quickBrowse('Sci-Fi')">Sci-Fi</span>
+            <span class="shelf-tag" style="background:rgba(255,255,255,.1);border-color:rgba(255,255,255,.2);color:rgba(244,241,234,.8);cursor:pointer;" onclick="quickBrowse('Self-Help')">Self-Help</span>
+          </div>
+        </div>
+        <div class="col-md-4 col-lg-5 d-none d-md-block fade-up fade-up-d2 text-center">
+          <div style="font-size:8rem;opacity:.18;filter:drop-shadow(0 0 40px rgba(201,144,44,.3));">📚</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main content: 3-col on lg, 1-col on xs -->
+  <div class="container py-4">
+    <!-- Alerts (AIM 1) -->
+    <div class="alert alert-bookread-success d-flex align-items-center gap-2 mb-4" id="homeAlert">
+      <i class="bi bi-info-circle-fill"></i>
+      <span><strong>Welcome!</strong> BookRead is your personal reading companion. Explore, track and discover.</span>
+      <button type="button" class="btn-close ms-auto" onclick="$('#homeAlert').fadeOut()"></button>
+    </div>
+
+    <div class="row g-4 reveal">
+
+      <!-- LEFT SIDEBAR (col-3 on lg, hidden on xs) -->
+      <div class="col-12 col-lg-3 order-2 order-lg-1">
+        <div class="sidebar-widget">
+          <div class="widget-header">📖 My Shelves</div>
+          <div class="widget-body">
+            <div class="d-grid gap-1">
+              <button class="shelf-tag text-start active" onclick="filterShelf('read')">✓ Read (42)</button>
+              <button class="shelf-tag text-start" onclick="filterShelf('reading')">▶ Currently Reading (3)</button>
+              <button class="shelf-tag text-start" onclick="filterShelf('want')">♥ Want to Read (18)</button>
+              <button class="shelf-tag text-start" onclick="filterShelf('favorites')">★ Favorites (9)</button>
+            </div>
+            <!-- AIM 4: DOM Manipulation -->
+            <hr style="border-color:var(--border)"/>
+            <button class="btn-bookread w-100 mb-2" id="toggleShelfDetail">Show Shelf Details</button>
+            <div id="shelfDetail" style="display:none;" class="toggle-panel">
+              <p class="mb-1" style="font-size:.82rem;"><strong>Reading goal 2024:</strong></p>
+              <div class="reading-progress mb-1"><div class="reading-progress-bar" style="width:58%"></div></div>
+              <small class="text-muted">42 / 72 books (58%)</small>
+            </div>
+          </div>
+        </div>
+
+        <div class="sidebar-widget">
+          <div class="widget-header">🔥 Trending Genres</div>
+          <div class="widget-body">
+            <span class="genre-pill">Fiction</span>
+            <span class="genre-pill">Mystery</span>
+            <span class="genre-pill">Sci-Fi</span>
+            <span class="genre-pill">Romance</span>
+            <span class="genre-pill">History</span>
+            <span class="genre-pill">Self-Help</span>
+            <span class="genre-pill">Biography</span>
+          </div>
+        </div>
+
+        <!-- Dark / Light mode toggle -->
+        <div class="sidebar-widget">
+          <div class="widget-header">🌙 Appearance</div>
+          <div class="widget-body">
+            <div class="d-flex align-items-center justify-content-between">
+              <span style="font-size:.85rem;font-weight:700;" id="themeLabel">Light Mode</span>
+              <div id="darkToggle" onclick="toggleDarkMode()" style="
+                width:52px;height:28px;border-radius:14px;background:var(--border);
+                cursor:pointer;position:relative;transition:background .3s;flex-shrink:0;">
+                <div id="darkToggleKnob" style="
+                  width:22px;height:22px;border-radius:50%;background:#fff;
+                  position:absolute;top:3px;left:3px;
+                  transition:transform .3s, background .3s;
+                  box-shadow:0 1px 4px rgba(0,0,0,.3);
+                  display:flex;align-items:center;justify-content:center;font-size:.75rem;">☀️</div>
+              </div>
+            </div>
+            <p style="font-size:.75rem;color:var(--text-muted);margin:.5rem 0 0;">Switch between light and dark reading modes.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- CENTER FEED (col-12 on xs, col-6 on lg) -->
+      <div class="col-12 col-lg-6 order-1 order-lg-2">
+        <h2 class="section-title">Recommended For You</h2>
+        <!-- Book grid: 2-col on sm, 3-col on md, 2-col inside parent on lg -->
+        <div class="row g-3" id="bookGrid">
+          <!-- Books injected by JS -->
+        </div>
+      </div>
+
+      <!-- RIGHT SIDEBAR (col-12 on xs, col-3 on lg) -->
+      <div class="col-12 col-lg-3 order-3">
+        <div class="sidebar-widget">
+          <div class="widget-header">👥 Friends Reading</div>
+          <div class="widget-body" id="friendFeed">
+            <div class="d-flex align-items-center gap-2 mb-2 pb-2" style="border-bottom:1px solid var(--border)">
+              <div style="width:36px;height:36px;border-radius:50%;background:var(--amber);display:flex;align-items:center;justify-content:center;font-weight:700;color:var(--brown);flex-shrink:0;">A</div>
+              <div>
+                <div style="font-size:.83rem;font-weight:700;">Aanya S.</div>
+                <div style="font-size:.78rem;color:var(--text-muted);">Reading <em>Dune</em></div>
+              </div>
+            </div>
+            <div class="d-flex align-items-center gap-2 mb-2 pb-2" style="border-bottom:1px solid var(--border)">
+              <div style="width:36px;height:36px;border-radius:50%;background:var(--green);display:flex;align-items:center;justify-content:center;font-weight:700;color:#fff;flex-shrink:0;">R</div>
+              <div>
+                <div style="font-size:.83rem;font-weight:700;">Rohan M.</div>
+                <div style="font-size:.78rem;color:var(--text-muted);">Finished <em>Atomic Habits</em> ★★★★★</div>
+              </div>
+            </div>
+            <div class="d-flex align-items-center gap-2">
+              <div style="width:36px;height:36px;border-radius:50%;background:#c0392b;display:flex;align-items:center;justify-content:center;font-weight:700;color:#fff;flex-shrink:0;">P</div>
+              <div>
+                <div style="font-size:.83rem;font-weight:700;">Priya K.</div>
+                <div style="font-size:.78rem;color:var(--text-muted);">Added <em>The Alchemist</em> to shelf</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="sidebar-widget">
+          <div class="widget-header">💬 Quote of the Day</div>
+          <div class="widget-body">
+            <div class="quote-block" id="dailyQuote">
+              "A reader lives a thousand lives before he dies. The man who never reads lives only one."
+            </div>
+            <small class="text-muted">— George R.R. Martin</small>
+            <br/><button class="btn-amber mt-2 w-100" id="newQuoteBtn">New Quote</button>
+          </div>
+        </div>
+
+        <!-- AIM 7: AJAX Random Users -->
+        <div class="sidebar-widget">
+          <div class="widget-header">🌍 Discover Readers</div>
+          <div class="widget-body">
+            <button class="btn-bookread w-100 mb-2" id="loadReadersBtn">
+              <span id="loadReadersSpinner" class="spinner-border spinner-border-sm me-1 d-none"></span>
+              Load Random Readers
+            </button>
+            <div id="ajaxReaderResults"></div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ════════════════════════════════════════════════════════
+     BROWSE PAGE  (AIM 8 – Sort/Search/Filter with JS simulating PHP arrays)
+════════════════════════════════════════════════════════ -->
+<section id="page-browse" class="page-section">
+  <div class="container py-4">
+    <h2 class="section-title">Browse Books</h2>
+
+    <!-- Search & Filter row -->
+    <div class="row g-3 mb-4 align-items-end">
+      <div class="col-12 col-sm-6 col-lg-4">
+        <label class="form-label">Search by title / author</label>
+        <input class="form-control" id="browseSearch" type="text" placeholder="e.g. Harry Potter…"/>
+      </div>
+      <div class="col-6 col-sm-3 col-lg-2">
+        <label class="form-label">Genre</label>
+        <select class="form-select" id="genreFilter">
+          <option value="">All Genres</option>
+          <option>Fiction</option>
+          <option>Mystery</option>
+          <option>Sci-Fi</option>
+          <option>Romance</option>
+          <option>Self-Help</option>
+          <option>Biography</option>
+          <option>History</option>
+        </select>
+      </div>
+      <div class="col-6 col-sm-3 col-lg-2">
+        <label class="form-label">Sort by</label>
+        <select class="form-select" id="sortBooks">
+          <option value="title">Title A–Z</option>
+          <option value="titleDesc">Title Z–A</option>
+          <option value="rating">Highest Rated</option>
+          <option value="year">Newest</option>
+        </select>
+      </div>
+      <div class="col-12 col-lg-4">
+        <button class="btn-bookread px-3 py-2 me-2" id="applyBrowseFilter">Apply Filters</button>
+        <button class="btn-outline-brown px-3 py-2" id="resetBrowseFilter">Reset</button>
+      </div>
+    </div>
+
+    <div id="browseAlert" class="mb-3"></div>
+    <div class="row g-3" id="browseGrid"></div>
+  </div>
+</section>
+
+<!-- ════════════════════════════════════════════════════════
+     MY BOOKS  (AIM 5 – Review form: string validation + formatting)
+════════════════════════════════════════════════════════ -->
+<section id="page-mybooks" class="page-section">
+  <div class="container py-4">
+    <h2 class="section-title">My Books & Reviews</h2>
+    <div class="row g-4">
+
+      <!-- LEFT: Reading list table -->
+      <div class="col-12 col-lg-7">
+        <div class="crud-section">
+          <h5 class="mb-3" style="font-family:'Playfair Display',serif;">My Reading List</h5>
+          <div class="table-responsive">
+            <table class="table table-hover table-bookread" id="myBooksTable">
+              <thead>
+                <tr>
+                  <th>Cover</th><th>Title</th><th>Author</th><th>Genre</th><th>Status</th><th>Rating</th><th></th>
+                </tr>
+              </thead>
+              <tbody id="myBooksBody"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- ── REVIEWS WALL ── -->
+        <div class="crud-section mt-0">
+          <div class="d-flex align-items-center justify-content-between mb-3">
+            <h5 class="mb-0" style="font-family:'Playfair Display',serif;">Community Reviews</h5>
+            <span class="badge" id="reviewCount" style="background:var(--amber);color:var(--brown);font-size:.8rem;">0 reviews</span>
+          </div>
+          <div id="reviewsWall">
+            <!-- reviews rendered here -->
+            <p class="text-muted" style="font-size:.88rem;" id="noReviewsMsg">No reviews yet — be the first to write one! →</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- RIGHT: Write a Review -->
+      <div class="col-12 col-lg-5">
+        <div class="crud-section" style="position:sticky;top:80px;">
+          <h5 class="mb-1" style="font-family:'Playfair Display',serif;">✍️ Write a Review</h5>
+          <p style="font-size:.82rem;color:var(--text-muted);margin-bottom:1.2rem;">Share your thoughts with the BookRead community.</p>
+
+          <!-- Book picker with cover preview -->
+          <div class="mb-3">
+            <label class="form-label">Select a Book</label>
+            <select class="form-select" id="reviewBookPicker">
+              <option value="">— Choose a book —</option>
+            </select>
+          </div>
+
+          <!-- Live cover preview -->
+          <div id="reviewCoverPreview" style="display:none;margin-bottom:1rem;">
+            <div class="d-flex gap-3 align-items-center p-2" style="background:var(--amber-light);border-radius:6px;border:1px solid var(--border);">
+              <img id="reviewPreviewImg" src="" alt="" style="width:52px;height:76px;object-fit:cover;border-radius:3px;box-shadow:var(--shadow);flex-shrink:0;"
+                onerror="this.style.display='none'"/>
+              <div>
+                <div id="reviewPreviewTitle" style="font-family:'Playfair Display',serif;font-weight:700;font-size:.92rem;"></div>
+                <div id="reviewPreviewAuthor" style="color:var(--amber);font-size:.8rem;font-weight:700;"></div>
+                <div id="reviewPreviewGenre" style="margin-top:.3rem;"></div>
+              </div>
+            </div>
+          </div>
+
+          <form id="reviewForm" novalidate>
+            <!-- hidden fields filled by picker -->
+            <input type="hidden" id="reviewTitle"/>
+            <input type="hidden" id="reviewAuthor"/>
+
+            <div class="mb-3">
+              <label class="form-label">Your Name</label>
+              <input type="text" class="form-control" id="reviewerName" placeholder="e.g. Khushi Patel"/>
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label">Your Rating</label>
+              <div class="star-input" id="starInput">
+                <i class="bi bi-star-fill" data-val="1"></i>
+                <i class="bi bi-star-fill" data-val="2"></i>
+                <i class="bi bi-star-fill" data-val="3"></i>
+                <i class="bi bi-star-fill" data-val="4"></i>
+                <i class="bi bi-star-fill" data-val="5"></i>
+              </div>
+              <input type="hidden" id="reviewRating" value="0"/>
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label">Review <small class="text-muted fw-normal">(min 20 chars)</small></label>
+              <textarea class="form-control" id="reviewText" rows="4" placeholder="What did you think of this book?"></textarea>
+              <div class="d-flex justify-content-between mt-1">
+                <div id="reviewTextErr" style="color:var(--red);font-size:.78rem;"></div>
+                <small class="text-muted" id="reviewCharCount">0 / 500</small>
+              </div>
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label">Tags <small class="text-muted fw-normal">(comma-separated)</small></label>
+              <input type="text" class="form-control" id="reviewTags" placeholder="e.g. must-read, emotional"/>
+              <small class="text-muted" id="reviewTagsFormatted"></small>
+            </div>
+
+            <button type="button" class="btn-bookread px-4 py-2 w-100" id="submitReview" style="font-size:1rem;">
+              <i class="bi bi-send me-2"></i>Post Review
+            </button>
+          </form>
+          <div id="reviewOutput" class="mt-2"></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ════════════════════════════════════════════════════════
+     COMMUNITY  (AIM 6 – jQuery events, hover, animations)
+════════════════════════════════════════════════════════ -->
+<section id="page-community" class="page-section">
+  <div class="container py-4">
+    <h2 class="section-title">Community</h2>
+    <div class="row g-4">
+      <div class="col-12 col-md-8">
+        <div class="crud-section">
+          <h5 style="font-family:'Playfair Display',serif;" class="mb-3">Discussion Board</h5>
+          <div id="discussionPosts">
+            <!-- posts rendered by JS -->
+          </div>
+          <hr style="border-color:var(--border)"/>
+          <h6 style="font-family:'Playfair Display',serif;" class="mb-2">Start a Discussion</h6>
+          <input class="form-control mb-2" id="discussInput" placeholder="What's on your mind? (type to see live preview)"/>
+          <div class="toggle-panel mb-2" id="discussPreview" style="display:none;">
+            <strong>Preview:</strong> <span id="discussPreviewText"></span>
+          </div>
+          <button class="btn-bookread px-3 py-2" id="postDiscussion">Post</button>
+        </div>
+      </div>
+      <div class="col-12 col-md-4">
+        <!-- AIM 4: More DOM manipulation -->
+        <div class="crud-section">
+          <h6 style="font-family:'Playfair Display',serif;" class="mb-2">Reading Challenges</h6>
+          <button class="btn-amber w-100 mb-2" id="toggleChallenges">Show Challenges</button>
+          <div id="challengePanel" style="display:none;">
+            <ul class="list-unstyled mb-0" style="font-size:.88rem;">
+              <li class="py-1 border-bottom" style="border-color:var(--border)!important;">🏆 Read 12 books in 2024</li>
+              <li class="py-1 border-bottom" style="border-color:var(--border)!important;">📚 Finish a 500+ page book</li>
+              <li class="py-1 border-bottom" style="border-color:var(--border)!important;">🌍 Read authors from 5 countries</li>
+              <li class="py-1">🎭 Read all Shakespeare plays</li>
+            </ul>
+          </div>
+          <hr style="border-color:var(--border)"/>
+          <h6 style="font-family:'Playfair Display',serif;" class="mb-2">Hover Book Tip</h6>
+          <div id="hoverBooks" class="d-flex gap-2 flex-wrap">
+            <!-- jQuery hover demo -->
+          </div>
+          <div id="hoverTip" class="mt-2" style="font-size:.82rem;color:var(--text-muted);min-height:2rem;"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ════════════════════════════════════════════════════════
+     ABOUT  (AIM 1 – Company profile: heading, paragraph, table)
+════════════════════════════════════════════════════════ -->
+<section id="page-about" class="page-section">
+  <div class="container py-4">
+
+    <!-- Heading -->
+    <div class="row mb-4">
+      <div class="col-12">
+        <h1 class="display-5 fw-bold mb-1" style="font-family:'Playfair Display',serif;font-style:italic;">About BookRead</h1>
+        <p class="lead text-muted">The world's largest community for readers.</p>
+        <hr style="border-color:var(--amber);border-width:2px;width:80px;opacity:1;"/>
+      </div>
+    </div>
+
+    <!-- Paragraphs -->
+    <div class="row g-4 mb-4">
+      <div class="col-12 col-md-7">
+        <h2 class="h4 mb-3" style="font-family:'Playfair Display',serif;">Our Story</h2>
+        <p>BookRead was founded in <strong>2007</strong> with a simple mission: help people find and share the books they love. What began as a small cataloguing tool has grown into the world's most vibrant reading community, connecting millions of readers, authors, and book clubs across the globe.</p>
+        <p>We believe that books have the power to transform lives, spark conversation, and bridge cultures. Our platform gives every reader a personal library, a social feed, and access to the collective wisdom of 90 million book lovers.</p>
+        <p class="mb-0">From debut novels to classic literature, from self-help to speculative fiction, <strong>BookRead is your home for every book you've ever loved</strong> — and every one you've yet to discover.</p>
+      </div>
+      <div class="col-12 col-md-5">
+        <!-- Stats (Bootstrap grid inside grid) -->
+        <div class="row g-3">
+          <div class="col-6"><div class="about-stat"><span class="stat-num">90M+</span><span class="stat-label">Members</span></div></div>
+          <div class="col-6"><div class="about-stat"><span class="stat-num">3.5B+</span><span class="stat-label">Books Catalogued</span></div></div>
+          <div class="col-6"><div class="about-stat"><span class="stat-num">200M+</span><span class="stat-num" style="font-size:1.5rem;">Reviews</span></div></div>
+          <div class="col-6"><div class="about-stat"><span class="stat-num">190+</span><span class="stat-label">Countries</span></div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Alert (AIM 1) -->
+    <div class="alert alert-bookread-warning mb-4">
+      <i class="bi bi-megaphone-fill me-2"></i>
+      <strong>Now Hiring!</strong> BookRead is looking for passionate bibliophiles to join our engineering and editorial teams.
+    </div>
+
+    <!-- TABLE (AIM 1 – proper table with Bootstrap) -->
+    <h2 class="h4 mb-3" style="font-family:'Playfair Display',serif;">Company Timeline</h2>
+    <div class="table-responsive mb-5">
+      <table class="table table-bordered table-hover table-bookread">
+        <thead>
+          <tr>
+            <th>Year</th>
+            <th>Milestone</th>
+            <th>Impact</th>
+            <th>Users</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td><strong>2007</strong></td><td>BookRead founded in San Francisco</td><td>Launched beta cataloguing tool</td><td>5,000</td></tr>
+          <tr><td><strong>2009</strong></td><td>Social features added</td><td>Friends, shelves, ratings launched</td><td>1.2M</td></tr>
+          <tr><td><strong>2012</strong></td><td>Amazon acquisition</td><td>Global infrastructure expansion</td><td>15M</td></tr>
+          <tr><td><strong>2015</strong></td><td>Author programs launched</td><td>Debut platform for indie authors</td><td>40M</td></tr>
+          <tr><td><strong>2018</strong></td><td>BookRead Choice Awards</td><td>Annual reader-voted book awards</td><td>65M</td></tr>
+          <tr><td><strong>2021</strong></td><td>Mobile app redesign</td><td>50M+ monthly active mobile users</td><td>80M</td></tr>
+          <tr><td><strong>2024</strong></td><td>AI Reading Assistant beta</td><td>Personalised recommendations via AI</td><td>90M+</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Team -->
+    <h2 class="h4 mb-3" style="font-family:'Playfair Display',serif;">Our Founders</h2>
+    <div class="row g-4 mb-4">
+
+      <!-- Harshvi -->
+      <div class="col-12 col-md-6">
+        <div class="team-card d-flex gap-4 align-items-center text-start p-4" style="border-radius:8px;">
+          <div class="team-avatar" style="width:90px;height:90px;font-size:2.2rem;flex-shrink:0;background:var(--amber);">H</div>
+          <div>
+            <h4 style="font-family:'Playfair Display',serif;margin-bottom:.2rem;">Harshvi</h4>
+            <div style="color:var(--amber);font-weight:700;font-size:.88rem;margin-bottom:.6rem;">Co-Founder & CEO</div>
+            <p style="font-size:.85rem;color:var(--brown-mid);margin-bottom:.7rem;">Harshvi leads BookRead's vision of making reading a shared, joyful experience for everyone. With a background in product design and a lifelong passion for literature, she built the platform from a weekend project into a global community of 90 million readers.</p>
+            <div class="d-flex gap-2">
+              <a href="#" style="color:var(--text-muted);font-size:1.1rem;"><i class="bi bi-twitter-x"></i></a>
+              <a href="#" style="color:var(--text-muted);font-size:1.1rem;"><i class="bi bi-linkedin"></i></a>
+              <a href="#" style="color:var(--text-muted);font-size:1.1rem;"><i class="bi bi-envelope"></i></a>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Mahek -->
+      <div class="col-12 col-md-6">
+        <div class="team-card d-flex gap-4 align-items-center text-start p-4" style="border-radius:8px;">
+          <div class="team-avatar" style="width:90px;height:90px;font-size:2.2rem;flex-shrink:0;background:var(--green);">M</div>
+          <div>
+            <h4 style="font-family:'Playfair Display',serif;margin-bottom:.2rem;">Mahek</h4>
+            <div style="color:var(--green);font-weight:700;font-size:.88rem;margin-bottom:.6rem;">Co-Founder & CTO</div>
+            <p style="font-size:.85rem;color:var(--brown-mid);margin-bottom:.7rem;">Mahek architects the technology behind BookRead's recommendation engine, social graph, and mobile experience. She is passionate about using data and engineering to help readers discover their next favourite book — one perfect match at a time.</p>
+            <div class="d-flex gap-2">
+              <a href="#" style="color:var(--text-muted);font-size:1.1rem;"><i class="bi bi-twitter-x"></i></a>
+              <a href="#" style="color:var(--text-muted);font-size:1.1rem;"><i class="bi bi-linkedin"></i></a>
+              <a href="#" style="color:var(--text-muted);font-size:1.1rem;"><i class="bi bi-github"></i></a>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+
+<!-- ════════════════════════════════════════════════════════
+     AUTH MODAL  (AIM 3 – Login/Register Bootstrap form + JS validation)
+════════════════════════════════════════════════════════ -->
+<div class="modal fade" id="authModal" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content" style="border:none;border-radius:6px;overflow:hidden;">
+      <div class="modal-header modal-header-bookread">
+        <h5 class="modal-title">Welcome to <em>BookRead</em></h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body p-4">
+        <!-- Tab toggle -->
+        <ul class="nav nav-tabs nav-tabs-auth mb-4" id="authTabs">
+          <li class="nav-item">
+            <button class="nav-link active" data-tab="login">Sign In</button>
+          </li>
+          <li class="nav-item">
+            <button class="nav-link" data-tab="register">Create Account</button>
+          </li>
+        </ul>
+
+        <!-- LOGIN FORM -->
+        <div id="loginForm">
+          <div class="mb-3">
+            <label class="form-label">Email Address</label>
+            <div class="input-group">
+              <span class="input-group-text" style="background:var(--amber-light);border-color:var(--border);"><i class="bi bi-envelope"></i></span>
+              <input type="email" class="form-control" id="loginEmail" placeholder="you@example.com"/>
+            </div>
+            <div class="mt-1" id="loginEmailErr" style="color:var(--red);font-size:.8rem;display:none;"></div>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Password</label>
+            <div class="input-group">
+              <span class="input-group-text" style="background:var(--amber-light);border-color:var(--border);"><i class="bi bi-lock"></i></span>
+              <input type="password" class="form-control" id="loginPassword" placeholder="••••••••"/>
+              <button class="btn btn-outline-secondary" type="button" id="toggleLoginPwd"><i class="bi bi-eye"></i></button>
+            </div>
+            <div class="mt-1" id="loginPwdErr" style="color:var(--red);font-size:.8rem;display:none;"></div>
+          </div>
+          <div class="d-flex justify-content-between align-items-center mb-3">
+            <div class="form-check">
+              <input class="form-check-input" type="checkbox" id="rememberMe"/>
+              <label class="form-check-label" for="rememberMe" style="font-size:.85rem;">Remember me</label>
+            </div>
+            <a href="#" style="font-size:.85rem;color:var(--amber);">Forgot password?</a>
+          </div>
+          <button class="btn-bookread w-100 py-2" id="loginBtn" style="font-size:1rem;">Sign In to BookRead</button>
+          <div id="loginResult" class="mt-3"></div>
+        </div>
+
+        <!-- REGISTER FORM -->
+        <div id="registerForm" style="display:none;">
+          <div class="row g-3">
+            <div class="col-6">
+              <label class="form-label">First Name</label>
+              <input type="text" class="form-control" id="regFirst" placeholder="Ada"/>
+              <div class="mt-1" id="regFirstErr" style="color:var(--red);font-size:.8rem;display:none;"></div>
+            </div>
+            <div class="col-6">
+              <label class="form-label">Last Name</label>
+              <input type="text" class="form-control" id="regLast" placeholder="Lovelace"/>
+              <div class="mt-1" id="regLastErr" style="color:var(--red);font-size:.8rem;display:none;"></div>
+            </div>
+          </div>
+          <div class="mb-3 mt-3">
+            <label class="form-label">Email Address</label>
+            <div class="input-group">
+              <span class="input-group-text" style="background:var(--amber-light);border-color:var(--border);"><i class="bi bi-envelope"></i></span>
+              <input type="email" class="form-control" id="regEmail" placeholder="you@example.com"/>
+            </div>
+            <div class="mt-1" id="regEmailErr" style="color:var(--red);font-size:.8rem;display:none;"></div>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Password</label>
+            <div class="input-group">
+              <span class="input-group-text" style="background:var(--amber-light);border-color:var(--border);"><i class="bi bi-lock"></i></span>
+              <input type="password" class="form-control" id="regPassword" placeholder="Min 8 chars"/>
+              <button class="btn btn-outline-secondary" type="button" id="toggleRegPwd"><i class="bi bi-eye"></i></button>
+            </div>
+            <div class="progress mt-1" style="height:4px;" id="pwdStrengthBar">
+              <div class="progress-bar" id="pwdStrength" style="width:0%;transition:width .3s;"></div>
+            </div>
+            <div class="mt-1" id="regPwdErr" style="color:var(--red);font-size:.8rem;display:none;"></div>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Confirm Password</label>
+            <input type="password" class="form-control" id="regConfirm" placeholder="Re-enter password"/>
+            <div class="mt-1" id="regConfirmErr" style="color:var(--red);font-size:.8rem;display:none;"></div>
+          </div>
+          <div class="mb-3">
+            <div class="form-check">
+              <input class="form-check-input" type="checkbox" id="agreeTerms"/>
+              <label class="form-check-label" for="agreeTerms" style="font-size:.85rem;">I agree to the <a href="#" style="color:var(--amber);">Terms of Service</a></label>
+            </div>
+            <div class="mt-1" id="regTermsErr" style="color:var(--red);font-size:.8rem;display:none;"></div>
+          </div>
+          <button class="btn-bookread w-100 py-2" id="registerBtn" style="font-size:1rem;">Create My Account</button>
+          <div id="registerResult" class="mt-3"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── FOOTER ── -->
+<footer>
+  <div class="container">
+    <div class="row g-4 mb-4">
+      <div class="col-12 col-sm-6 col-lg-3">
+        <div class="footer-brand mb-2">BookRead</div>
+        <p style="font-size:.82rem;color:rgba(244,241,234,.6);">The world's largest site for readers and book recommendations.</p>
+      </div>
+      <div class="col-6 col-sm-3 col-lg-2">
+        <h6>Company</h6>
+        <a href="#">About Us</a><a href="#">Careers</a><a href="#">Terms</a><a href="#">Privacy</a>
+      </div>
+      <div class="col-6 col-sm-3 col-lg-2">
+        <h6>Work With Us</h6>
+        <a href="#">Authors</a><a href="#">Advertisers</a><a href="#">Publishers</a>
+      </div>
+      <div class="col-6 col-sm-3 col-lg-2">
+        <h6>Explore</h6>
+        <a href="#">Browse</a><a href="#">Lists</a><a href="#">Awards</a><a href="#">Community</a>
+      </div>
+      <div class="col-6 col-sm-3 col-lg-3">
+        <h6>Connect</h6>
+        <div class="d-flex gap-3 mt-1">
+          <a href="#" style="font-size:1.3rem;"><i class="bi bi-twitter-x"></i></a>
+          <a href="#" style="font-size:1.3rem;"><i class="bi bi-instagram"></i></a>
+          <a href="#" style="font-size:1.3rem;"><i class="bi bi-facebook"></i></a>
+          <a href="#" style="font-size:1.3rem;"><i class="bi bi-linkedin"></i></a>
+        </div>
+      </div>
+    </div>
+    <hr/>
+    <div class="text-center" style="font-size:.78rem;color:rgba(244,241,234,.4);">
+      © 2024 BookRead Inc. All rights reserved. | Built with Bootstrap 5 · jQuery · JavaScript
+    </div>
+  </div>
+</footer>
+
+<!-- Bootstrap JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+/* ═══════════════════════════════════════════════════
+   DATA  (simulates PHP/Laravel database models)
+═══════════════════════════════════════════════════ */
+// Open Library cover URL helper: https://covers.openlibrary.org/b/id/{ID}-M.jpg
+const OL = id => `https://covers.openlibrary.org/b/id/${id}-M.jpg`;
+
+const BOOKS_DB = [
+  { id:1,  title:"The Great Gatsby",     author:"F. Scott Fitzgerald", genre:"Fiction",   year:1925, rating:4.2, color:"#1a3a5c", cover: OL(8432209)   },
+  { id:2,  title:"Dune",                 author:"Frank Herbert",        genre:"Sci-Fi",    year:1965, rating:4.5, color:"#7a5c1e", cover: OL(8224526)   },
+  { id:3,  title:"Atomic Habits",        author:"James Clear",          genre:"Self-Help", year:2018, rating:4.7, color:"#1a5c3a", cover: OL(10527843)  },
+  { id:4,  title:"Gone Girl",            author:"Gillian Flynn",        genre:"Mystery",   year:2012, rating:4.0, color:"#3a1a5c", cover: OL(8231023)   },
+  { id:5,  title:"Pride & Prejudice",    author:"Jane Austen",          genre:"Romance",   year:1813, rating:4.6, color:"#5c1a3a", cover: OL(8231956)   },
+  { id:6,  title:"Sapiens",              author:"Yuval Noah Harari",    genre:"History",   year:2011, rating:4.4, color:"#3a4a1a", cover: OL(8739161)   },
+  { id:7,  title:"The Alchemist",        author:"Paulo Coelho",         genre:"Fiction",   year:1988, rating:4.3, color:"#5c3a1a", cover: OL(8370005)   },
+  { id:8,  title:"Educated",             author:"Tara Westover",        genre:"Biography", year:2018, rating:4.5, color:"#1a4a5c", cover: OL(8739244)   },
+  { id:9,  title:"1984",                 author:"George Orwell",        genre:"Fiction",   year:1949, rating:4.7, color:"#2a2a2a", cover: OL(8575708)   },
+  { id:10, title:"The Silent Patient",   author:"Alex Michaelides",     genre:"Mystery",   year:2019, rating:4.2, color:"#3a1a1a", cover: OL(9280044)   },
+  { id:11, title:"Thinking Fast & Slow", author:"Daniel Kahneman",      genre:"Self-Help", year:2011, rating:4.3, color:"#1a3a2a", cover: OL(8228792)   },
+  { id:12, title:"The Hobbit",           author:"J.R.R. Tolkien",       genre:"Fiction",   year:1937, rating:4.8, color:"#2a4a1a", cover: OL(8406786)   },
+];
+
+
+
+const QUOTES = [
+  { q: "A reader lives a thousand lives before he dies.", a: "George R.R. Martin" },
+  { q: "Not all those who wander are lost.", a: "J.R.R. Tolkien" },
+  { q: "It is a truth universally acknowledged…", a: "Jane Austen" },
+  { q: "So it goes.", a: "Kurt Vonnegut" },
+  { q: "We accept the love we think we deserve.", a: "Stephen Chbosky" },
+  { q: "The books that the world calls immoral are books that show the world its own shame.", a: "Oscar Wilde" },
+];
+
+const MY_BOOKS = [
+  { title:"Dune", author:"Frank Herbert", genre:"Sci-Fi", status:"Read", rating:5, cover: OL(8224526) },
+  { title:"Atomic Habits", author:"James Clear", genre:"Self-Help", status:"Read", rating:4, cover: OL(10527843) },
+  { title:"1984", author:"George Orwell", genre:"Fiction", status:"Currently Reading", rating:null, cover: OL(8575708) },
+  { title:"Gone Girl", author:"Gillian Flynn", genre:"Mystery", status:"Want to Read", rating:null, cover: OL(8231023) },
+];
+
+const DISCUSSIONS = [
+  { user:"Meera P.", time:"2h ago", text:"Just finished Dune — the world-building is absolutely unreal. Anyone else think the film doesn't do it justice?", likes:14 },
+  { user:"Arjun S.", time:"5h ago", text:"Hot take: Self-help books are more valuable than most literary fiction. Change my mind.", likes:9 },
+  { user:"Lily C.", time:"1d ago", text:"Looking for mystery recommendations similar to The Silent Patient. Already read Gone Girl!", likes:21 },
+];
+
+/* ═══════════════════════════════════════════════════
+   NAVIGATION
+═══════════════════════════════════════════════════ */
+function navigateTo(page) {
+  document.querySelectorAll('.page-section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.nav-link[data-page]').forEach(l => l.classList.remove('active'));
+  const target = document.getElementById('page-' + page);
+  if (target) target.classList.add('active');
+  document.querySelectorAll(`[data-page="${page}"]`).forEach(l => l.classList.add('active'));
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+  triggerReveal();
+}
+
+document.querySelectorAll('.nav-link[data-page]').forEach(link => {
+  link.addEventListener('click', e => {
+    e.preventDefault();
+    navigateTo(link.dataset.page);
+  });
+});
+
+/* ═══════════════════════════════════════════════════
+   TOAST NOTIFICATION SYSTEM
+═══════════════════════════════════════════════════ */
+let toastTimer;
+function showToast(msg, icon='✓', color='var(--amber)') {
+  const t = document.getElementById('brToast');
+  t.innerHTML = `<span style="font-size:1.1rem;">${icon}</span> ${msg}`;
+  t.style.borderLeftColor = color;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+function addToShelf(title) {
+  showToast(`<strong>"${title}"</strong> added to your shelf`, '📚');
+}
+
+/* ═══════════════════════════════════════════════════
+   HERO SEARCH
+═══════════════════════════════════════════════════ */
+function heroSearch() {
+  const q = document.getElementById('heroSearchInput').value.trim();
+  if (!q) return;
+  document.getElementById('browseSearch').value = q;
+  navigateTo('browse');
+  applyBrowseFilters();
+}
+function quickBrowse(genre) {
+  document.getElementById('genreFilter').value = genre;
+  document.getElementById('browseSearch').value = '';
+  navigateTo('browse');
+  applyBrowseFilters();
+}
+
+/* ═══════════════════════════════════════════════════
+   SCROLL EFFECTS
+═══════════════════════════════════════════════════ */
+window.addEventListener('scroll', () => {
+  // Navbar shadow
+  document.querySelector('.navbar-bookread').classList.toggle('scrolled', window.scrollY > 20);
+  // Scroll to top button
+  document.getElementById('scrollTopBtn').classList.toggle('visible', window.scrollY > 300);
+  // Reveal elements
+  document.querySelectorAll('.reveal').forEach(el => {
+    if (el.getBoundingClientRect().top < window.innerHeight - 60)
+      el.classList.add('visible');
+  });
+  // Section title underline
+  document.querySelectorAll('.section-title').forEach(el => {
+    if (el.getBoundingClientRect().top < window.innerHeight - 40)
+      el.classList.add('visible');
+  });
+});
+
+/* ═══════════════════════════════════════════════════
+   RIPPLE EFFECT ON BUTTONS
+═══════════════════════════════════════════════════ */
+document.addEventListener('click', function(e) {
+  const btn = e.target.closest('.btn-bookread, .btn-amber, .btn-auth, .btn-outline-brown');
+  if (!btn) return;
+  const r = document.createElement('span');
+  r.className = 'ripple';
+  const rect = btn.getBoundingClientRect();
+  const size = Math.max(rect.width, rect.height);
+  r.style.cssText = `width:${size}px;height:${size}px;left:${e.clientX-rect.left-size/2}px;top:${e.clientY-rect.top-size/2}px;`;
+  btn.appendChild(r);
+  setTimeout(() => r.remove(), 600);
+});
+
+/* ═══════════════════════════════════════════════════
+   REVEAL ALL EXISTING ELEMENTS ON PAGE LOAD
+═══════════════════════════════════════════════════ */
+function triggerReveal() {
+  setTimeout(() => {
+    document.querySelectorAll('.reveal').forEach(el => {
+      if (el.getBoundingClientRect().top < window.innerHeight - 40)
+        el.classList.add('visible');
+    });
+    document.querySelectorAll('.section-title').forEach(el => el.classList.add('visible'));
+  }, 100);
+}
+
+/* ═══════════════════════════════════════════════════
+   BOOK CARD RENDERER
+═══════════════════════════════════════════════════ */
+function starsHTML(r) {
+  if (!r) return '<span style="color:var(--text-muted);font-size:.78rem;">Unrated</span>';
+  let h = '';
+  for (let i = 1; i <= 5; i++)
+    h += `<i class="bi bi-star-fill" style="color:${i <= Math.round(r) ? 'var(--amber)' : 'var(--border)'};font-size:.8rem;"></i>`;
+  return h + `<span style="font-size:.78rem;color:var(--text-muted);margin-left:3px;">${Number(r).toFixed(1)}</span>`;
+}
+
+function bookCardHTML(b) {
+  const coverEl = b.cover
+    ? `<img src="${b.cover}" alt="${b.title}" class="book-cover"
+         onerror="this.style.display='none';this.nextElementSibling.style.display='flex';"
+         style="width:100%;height:180px;object-fit:cover;display:block;"/>
+       <div class="book-cover-placeholder" style="background:${b.color};display:none;"><span>${b.title[0]}</span></div>`
+    : `<div class="book-cover-placeholder" style="background:${b.color};"><span>${b.title[0]}</span></div>`;
+  return `
+  <div class="col-6 col-sm-4 col-md-3 col-lg-6 fade-up">
+    <div class="book-card" data-id="${b.id}">
+      <div style="position:relative;overflow:hidden;">
+        ${coverEl}
+        <span class="genre-pill" style="position:absolute;top:7px;left:7px;font-size:.6rem;opacity:.92;">${b.genre}</span>
+      </div>
+      <div class="card-body">
+        <div class="book-title">${b.title}</div>
+        <div class="book-author">${b.author}</div>
+        <div class="star-rating mt-1">${starsHTML(b.rating)}</div>
+        <button class="btn-bookread mt-2 w-100" style="font-size:.78rem;" onclick="addToShelf('${b.title.replace(/'/g,"\\'")}')">+ Want to Read</button>
+      </div>
+    </div>
+  </div>`;
+}
+
+function addToShelf(title) {
+  const a = document.createElement('div');
+  a.className = 'alert alert-bookread-success position-fixed';
+  a.style.cssText = 'bottom:20px;right:20px;z-index:9999;min-width:250px;';
+  a.innerHTML = `<i class="bi bi-check-circle me-2"></i><strong>"${title}"</strong> added to shelf!`;
+  document.body.appendChild(a);
+  setTimeout(() => a.remove(), 3000);
+}
+
+/* ─── Render Home book grid ─── */
+function renderHomeBooks() {
+  const grid = document.getElementById('bookGrid');
+  grid.innerHTML = BOOKS_DB.slice(0, 6).map(bookCardHTML).join('');
+}
+renderHomeBooks();
+
+/* ═══════════════════════════════════════════════════
+   BROWSE  (AIM 8 – sort, search, filter simulating PHP array ops)
+═══════════════════════════════════════════════════ */
+function renderBrowse(books) {
+  const grid = document.getElementById('browseGrid');
+  if (!books.length) {
+    grid.innerHTML = '<div class="col-12"><div class="alert alert-bookread-warning">No books match your filters.</div></div>';
+    return;
+  }
+  grid.innerHTML = books.map(b => {
+    const coverEl = b.cover
+      ? `<img src="${b.cover}" alt="${b.title}"
+           style="width:100%;height:150px;object-fit:cover;display:block;"
+           onerror="this.style.display='none';this.nextElementSibling.style.display='flex';"/>
+         <div class="book-cover-placeholder" style="background:${b.color};height:150px;display:none;">${b.title[0]}</div>`
+      : `<div class="book-cover-placeholder" style="background:${b.color};height:150px;">${b.title[0]}</div>`;
+    return `
+  <div class="col-6 col-sm-4 col-md-3 col-xl-2">
+    <div class="book-card">
+      <div style="position:relative;overflow:hidden;">
+        ${coverEl}
+        <span class="genre-pill" style="position:absolute;top:6px;left:6px;font-size:.6rem;opacity:.92;">${b.genre}</span>
+      </div>
+      <div class="card-body" style="padding:.7rem;">
+        <div class="book-title" style="font-size:.85rem;">${b.title}</div>
+        <div class="book-author" style="font-size:.75rem;">${b.author}</div>
+        <div class="star-rating mt-1">${starsHTML(b.rating)}</div>
+        <button class="btn-bookread mt-2 w-100" style="font-size:.73rem;" onclick="addToShelf('${b.title.replace(/'/g,"\\'")}')">+ Want to Read</button>
+      </div>
+    </div>
+  </div>`;
+  }).join('');
+}
+
+function applyBrowseFilters() {
+  let books = [...BOOKS_DB];
+  const q = document.getElementById('browseSearch').value.trim().toLowerCase();
+  const genre = document.getElementById('genreFilter').value;
+  const sort = document.getElementById('sortBooks').value;
+
+  // AIM 8: search (simulates PHP array_filter + strpos)
+  if (q) books = books.filter(b => b.title.toLowerCase().includes(q) || b.author.toLowerCase().includes(q));
+  if (genre) books = books.filter(b => b.genre === genre);
+
+  // AIM 8: sort (simulates PHP usort)
+  if (sort === 'title')      books.sort((a,b) => a.title.localeCompare(b.title));
+  if (sort === 'titleDesc')  books.sort((a,b) => b.title.localeCompare(a.title));
+  if (sort === 'rating')     books.sort((a,b) => b.rating - a.rating);
+  if (sort === 'year')       books.sort((a,b) => b.year - a.year);
+
+  const alert = document.getElementById('browseAlert');
+  alert.innerHTML = `<div class="alert alert-bookread-success py-2"><i class="bi bi-funnel me-2"></i>Showing <strong>${books.length}</strong> books${q ? ` matching "<em>${q}</em>"` : ''}${genre ? ` in <em>${genre}</em>` : ''}.</div>`;
+
+  renderBrowse(books);
+}
+
+document.getElementById('applyBrowseFilter').onclick = applyBrowseFilters;
+document.getElementById('resetBrowseFilter').onclick = () => {
+  document.getElementById('browseSearch').value = '';
+  document.getElementById('genreFilter').value = '';
+  document.getElementById('sortBooks').value = 'title';
+  document.getElementById('browseAlert').innerHTML = '';
+  renderBrowse(BOOKS_DB);
+};
+renderBrowse(BOOKS_DB);
+
+/* ─── Nav search (AIM 8 merge/search) ─── */
+document.getElementById('navSearchBtn').onclick = () => {
+  const q = document.getElementById('navSearch').value.trim();
+  if (!q) return;
+  document.getElementById('browseSearch').value = q;
+  navigateTo('browse');
+  applyBrowseFilters();
+};
+
+/* ═══════════════════════════════════════════════════
+   REVIEWS STORE
+═══════════════════════════════════════════════════ */
+const REVIEWS = [
+  {
+    id: 1,
+    title: "The Alchemist", author: "Paulo Coelho", genre: "Fiction",
+    reviewer: "Juhi Mehta", rating: 4.8,
+    text: "A deeply inspiring story about following your dreams and trusting the journey of life.",
+    tags: ["inspirational", "fiction", "journey"], cover: OL(8370005), ts: "3 days ago",
+    avatarColor: "#c9902c", likes: 31
+  },
+  {
+    id: 2,
+    title: "Atomic Habits", author: "James Clear", genre: "Self-Help",
+    reviewer: "Tanisha Awhad", rating: 4.7,
+    text: "Simple yet powerful ideas that genuinely help build better habits every day.",
+    tags: ["self-help", "habits", "productivity"], cover: OL(10527843), ts: "5 days ago",
+    avatarColor: "#409153", likes: 28
+  },
+  {
+    id: 3,
+    title: "It Ends with Us", author: "Colleen Hoover", genre: "Romance",
+    reviewer: "Diya Jain", rating: 4.6,
+    text: "An emotional and beautifully written novel with strong characters and meaningful lessons.",
+    tags: ["romance", "emotional", "colleen-hoover"], cover: null, ts: "1 week ago",
+    coverColor: "#8e44ad", avatarColor: "#e74c3c", likes: 19
+  },
+  {
+    id: 4,
+    title: "Harry Potter and the Sorcerer's Stone", author: "J. K. Rowling", genre: "Fantasy",
+    reviewer: "Khushi Patel", rating: 4.9,
+    text: "Magical, adventurous, and impossible to put down. A timeless favorite.",
+    tags: ["fantasy", "magic", "classic"], cover: OL(8228854), ts: "2 weeks ago",
+    avatarColor: "#2980b9", likes: 47
+  },
+  {
+    id: 5,
+    title: "Rich Dad Poor Dad", author: "Robert Kiyosaki", genre: "Finance",
+    reviewer: "Paran Vasa", rating: 4.5,
+    text: "A practical and eye-opening book about money, investing, and financial thinking.",
+    tags: ["finance", "investing", "money"], cover: OL(8739172), ts: "2 weeks ago",
+    avatarColor: "#1a6b3c", likes: 23
+  },
+  {
+    id: 6,
+    title: "The Psychology of Money", author: "Morgan Housel", genre: "Finance",
+    reviewer: "Trisha Vaviya", rating: 4.8,
+    text: "Very relatable and insightful. Explains financial behavior in a simple and engaging way.",
+    tags: ["finance", "psychology", "money"], cover: OL(10976052), ts: "3 weeks ago",
+    avatarColor: "#c0392b", likes: 35
+  }
+];
+let reviewNextId = 7;
+
+/* ─── Render Reviews Wall ─── */
+function renderReviews() {
+  const wall = document.getElementById('reviewsWall');
+  const noMsg = document.getElementById('noReviewsMsg');
+  document.getElementById('reviewCount').textContent = `${REVIEWS.length} review${REVIEWS.length !== 1 ? 's' : ''}`;
+
+  if (!REVIEWS.length) {
+    wall.innerHTML = '';
+    noMsg.style.display = '';
+    return;
+  }
+  noMsg.style.display = 'none';
+
+  wall.innerHTML = REVIEWS.map(r => {
+    const initials = r.reviewer.split(' ').map(w => w[0]).join('').slice(0,2).toUpperCase();
+    const bg = r.coverColor || '#382110';
+    const coverHTML = r.cover
+      ? `<img src="${r.cover}" alt="${r.title}" class="review-cover"
+           onerror="this.style.display='none';this.nextElementSibling.style.display='flex';"  />
+         <div class="review-cover-placeholder" style="background:${bg};display:none;">${r.title[0]}</div>`
+      : `<div class="review-cover-placeholder" style="background:${bg};">${r.title[0]}</div>`;
+
+    const ratingDisplay = Number(r.rating).toFixed(1);
+    const fullStars = Math.floor(r.rating);
+    let starsH = '';
+    for(let i=1;i<=5;i++) starsH += `<i class="bi bi-star-fill" style="color:${i<=fullStars?'var(--amber)':'var(--border)'};font-size:.78rem;"></i>`;
+
+    return `
+    <div class="review-card" id="review-${r.id}">
+      ${coverHTML}
+      <div class="review-body">
+        <div class="d-flex align-items-start justify-content-between gap-2">
+          <div>
+            <div class="review-book-title">${r.title}</div>
+            <div style="font-size:.78rem;color:var(--amber);font-weight:700;">${r.author}</div>
+            ${r.genre ? `<span class="genre-pill mt-1 d-inline-block" style="font-size:.65rem;">${r.genre}</span>` : ''}
+          </div>
+          <button class="btn-delete-review" onclick="deleteReview(${r.id})" title="Delete review"><i class="bi bi-x-circle"></i></button>
+        </div>
+        <div class="d-flex align-items-center gap-1 my-1">
+          ${starsH}
+          <span style="font-size:.8rem;font-weight:700;color:var(--brown-mid);margin-left:4px;">${ratingDisplay}/5</span>
+        </div>
+        <p class="review-text">"${r.text}"</p>
+        <div class="mb-1">${r.tags.map(t => `<span class="shelf-tag" style="font-size:.7rem;">#${t}</span>`).join('')}</div>
+        <div class="d-flex align-items-center gap-2 mt-2">
+          <div class="reviewer-avatar" style="background:${r.avatarColor};">${initials}</div>
+          <span class="review-meta"><strong>${r.reviewer}</strong> · ${r.ts}</span>
+          <button class="ms-auto btn btn-sm btn-outline-secondary py-0" style="font-size:.72rem;" onclick="likeReview(${r.id},this)">
+            <i class="bi bi-hand-thumbs-up"></i> ${r.likes}
+          </button>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function deleteReview(id) {
+  const idx = REVIEWS.findIndex(r => r.id === id);
+  if (idx > -1) {
+    const card = document.getElementById('review-' + id);
+    $(card).slideUp(250, () => { REVIEWS.splice(idx, 1); renderReviews(); });
+  }
+}
+
+function likeReview(id, btn) {
+  const r = REVIEWS.find(x => x.id === id);
+  if (r) { r.likes++; btn.innerHTML = `<i class="bi bi-hand-thumbs-up-fill"></i> ${r.likes}`; btn.style.background = 'var(--amber-light)'; }
+}
+
+/* ═══════════════════════════════════════════════════
+   MY BOOKS TABLE (AIM 1)
+═══════════════════════════════════════════════════ */
+function renderMyBooks() {
+  document.getElementById('myBooksBody').innerHTML = MY_BOOKS.map((b, i) => `
+  <tr style="animation-delay:${i*0.05}s;">
+    <td>
+      ${b.cover
+        ? `<img src="${b.cover}" style="width:36px;height:52px;object-fit:cover;border-radius:3px;box-shadow:var(--shadow);" onerror="this.style.display='none'"/>`
+        : `<div style="width:36px;height:52px;background:#5a3e28;border-radius:3px;display:flex;align-items:center;justify-content:center;color:rgba(255,255,255,.6);font-weight:700;">${b.title[0]}</div>`}
+    </td>
+    <td><strong style="font-size:.88rem;">${b.title}</strong></td>
+    <td style="font-size:.85rem;">${b.author}</td>
+    <td><span class="genre-pill">${b.genre}</span></td>
+    <td>
+      <span class="badge" style="background:${b.status==='Read'?'var(--green)':b.status.includes('Currently')?'var(--amber)':'#888'};font-size:.72rem;border-radius:10px;padding:.25rem .55rem;">
+        ${b.status==='Read'?'✓ ':b.status.includes('Currently')?'▶ ':'♥ '}${b.status}
+      </span>
+    </td>
+    <td>${b.rating ? starsHTML(b.rating) : '<span style="color:var(--text-muted);font-size:.78rem;">—</span>'}</td>
+    <td><button class="btn btn-sm btn-outline-danger py-0" onclick="removeMyBook(${i})" title="Remove"><i class="bi bi-trash"></i></button></td>
+  </tr>`).join('');
+}
+function removeMyBook(i) {
+  const title = MY_BOOKS[i].title;
+  MY_BOOKS.splice(i, 1);
+  renderMyBooks();
+  showToast(`"${title}" removed from your list`, '🗑️', 'var(--red)');
+}
+renderMyBooks();
+
+/* ═══════════════════════════════════════════════════
+   REVIEW FORM  (AIM 5 – string validation, formatting, type conversion)
+═══════════════════════════════════════════════════ */
+let selectedRating = 0;
+
+// Star rating UI
+document.querySelectorAll('#starInput i').forEach(star => {
+  star.addEventListener('click', function() {
+    selectedRating = parseInt(this.dataset.val);
+    document.getElementById('reviewRating').value = selectedRating;
+    document.querySelectorAll('#starInput i').forEach((s, idx) => {
+      s.style.color = idx < selectedRating ? 'var(--amber)' : 'var(--border)';
+    });
+  });
+  star.addEventListener('mouseover', function() {
+    const v = parseInt(this.dataset.val);
+    document.querySelectorAll('#starInput i').forEach((s, idx) => {
+      s.style.color = idx < v ? 'var(--amber)' : 'var(--border)';
+    });
+  });
+  star.addEventListener('mouseleave', function() {
+    document.querySelectorAll('#starInput i').forEach((s, idx) => {
+      s.style.color = idx < selectedRating ? 'var(--amber)' : 'var(--border)';
+    });
+  });
+});
+
+// Live char count (AIM 5 - string length)
+document.getElementById('reviewText').addEventListener('input', function() {
+  const len = this.value.length;
+  document.getElementById('reviewCharCount').textContent = `${len} / 500`;
+  if (len > 500) this.value = this.value.substring(0, 500); // type conversion + substring
+});
+
+// Live tag formatting (AIM 5 - string split/trim/join)
+document.getElementById('reviewTags').addEventListener('input', function() {
+  const raw = this.value;
+  const tags = raw.split(',')
+    .map(t => t.trim().toLowerCase().replace(/\s+/g, '-')) // string manipulation
+    .filter(t => t.length > 0);
+  document.getElementById('reviewTagsFormatted').textContent =
+    tags.length ? `Formatted: ${tags.map(t => '#'+t).join(' ')}` : '';
+});
+
+document.getElementById('submitReview').addEventListener('click', function() {
+  const title  = document.getElementById('reviewTitle').value.trim();
+  const author = document.getElementById('reviewAuthor').value.trim();
+  const text   = document.getElementById('reviewText').value.trim();
+  const rating = parseInt(document.getElementById('reviewRating').value);
+  const textEl = document.getElementById('reviewText');
+  let valid = true;
+
+  // Validate: book must be selected
+  if (!title) {
+    showToast('Please select a book first', '⚠️', 'var(--amber)');
+    document.getElementById('reviewBookPicker').focus();
+    return;
+  }
+  // Validate: review text (AIM 5 string length check)
+  textEl.classList.remove('is-invalid');
+  if (!text || text.length < 20) {
+    textEl.classList.add('is-invalid');
+    document.getElementById('reviewTextErr').textContent = `Review too short (${text.length}/20 chars min).`;
+    valid = false;
+  }
+  if (!valid) return;
+
+  // AIM 5: string formatting
+  const wordCount = text.split(/\s+/).filter(w=>w).length;
+  const tags = document.getElementById('reviewTags').value.split(',').map(t=>t.trim().toLowerCase().replace(/\s+/g,'-')).filter(Boolean);
+  const reviewer = document.getElementById('reviewerName').value.trim() || 'Anonymous Reader';
+
+  // Push to reviews wall
+  const avatarColors = ['#409153','#c9902c','#c0392b','#2980b9','#8e44ad','#1a6b3c'];
+  // Find genre from BOOKS_DB if available
+  const dbBook = BOOKS_DB.find(b => b.title.toLowerCase() === title.toLowerCase());
+  REVIEWS.unshift({
+    id: reviewNextId++,
+    title, author,
+    genre: dbBook ? dbBook.genre : '',
+    cover: dbBook ? dbBook.cover : null,
+    reviewer, rating, text,
+    tags: tags.length ? tags : ['reader-review'],
+    ts: 'Just now',
+    avatarColor: avatarColors[Math.floor(Math.random()*avatarColors.length)],
+    likes: 0
+  });
+  renderReviews();
+
+  document.getElementById('reviewForm').reset();
+  document.getElementById('reviewBookPicker').value = '';
+  document.getElementById('reviewCoverPreview').style.display = 'none';
+  document.getElementById('reviewTitle').value = '';
+  document.getElementById('reviewAuthor').value = '';
+  selectedRating = 0;
+  document.querySelectorAll('#starInput i').forEach(s => s.style.color = 'var(--border)');
+  document.getElementById('reviewCharCount').textContent = '0 / 500';
+  document.getElementById('reviewOutput').innerHTML = '';
+  showToast(`Review for "<strong>${title}</strong>" posted!`, '⭐');
+});
+
+/* ═══════════════════════════════════════════════════
+   AIM 3 – LOGIN / REGISTER VALIDATION
+═══════════════════════════════════════════════════ */
+// Tab toggle
+document.querySelectorAll('#authTabs .nav-link').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('#authTabs .nav-link').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    if (btn.dataset.tab === 'login') {
+      document.getElementById('loginForm').style.display = '';
+      document.getElementById('registerForm').style.display = 'none';
+    } else {
+      document.getElementById('loginForm').style.display = 'none';
+      document.getElementById('registerForm').style.display = '';
+    }
+  });
+});
+
+// Password toggle
+function togglePwd(inputId, btnId) {
+  document.getElementById(btnId).addEventListener('click', () => {
+    const inp = document.getElementById(inputId);
+    const btn = document.getElementById(btnId);
+    inp.type = inp.type === 'password' ? 'text' : 'password';
+    btn.innerHTML = inp.type === 'password' ? '<i class="bi bi-eye"></i>' : '<i class="bi bi-eye-slash"></i>';
+  });
+}
+togglePwd('loginPassword', 'toggleLoginPwd');
+togglePwd('regPassword', 'toggleRegPwd');
+
+// Password strength
+document.getElementById('regPassword').addEventListener('input', function() {
+  const v = this.value;
+  let score = 0;
+  if (v.length >= 8) score++;
+  if (/[A-Z]/.test(v)) score++;
+  if (/[0-9]/.test(v)) score++;
+  if (/[^A-Za-z0-9]/.test(v)) score++;
+  const colors = ['#c0392b','#e67e22','#f1c40f','#27ae60'];
+  const bar = document.getElementById('pwdStrength');
+  bar.style.width = (score * 25) + '%';
+  bar.style.background = colors[score-1] || '#ddd';
+});
+
+function showErr(id, msg) {
+  const el = document.getElementById(id);
+  el.textContent = msg; el.style.display = 'block';
+}
+function hideErr(id) { document.getElementById(id).style.display = 'none'; }
+
+// LOGIN (AIM 3 validation)
+document.getElementById('loginBtn').addEventListener('click', () => {
+  const email = document.getElementById('loginEmail').value.trim();
+  const pwd   = document.getElementById('loginPassword').value;
+  let valid = true;
+
+  hideErr('loginEmailErr'); hideErr('loginPwdErr');
+  document.getElementById('loginEmail').classList.remove('is-invalid');
+  document.getElementById('loginPassword').classList.remove('is-invalid');
+
+  // AIM 8: regex email validation
+  if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    showErr('loginEmailErr', 'Enter a valid email address.');
+    document.getElementById('loginEmail').classList.add('is-invalid');
+    valid = false;
+  }
+  if (!pwd || pwd.length < 6) {
+    showErr('loginPwdErr', 'Password must be at least 6 characters.');
+    document.getElementById('loginPassword').classList.add('is-invalid');
+    valid = false;
+  }
+  if (!valid) return;
+
+  document.getElementById('loginResult').innerHTML = `
+  <div class="alert alert-bookread-success">
+    <i class="bi bi-check-circle me-2"></i>Welcome back! Redirecting to your shelf…
+  </div>`;
+  setTimeout(() => {
+    bootstrap.Modal.getInstance(document.getElementById('authModal')).hide();
+    document.querySelector('.btn-auth').textContent = email.split('@')[0];
+    document.getElementById('loginResult').innerHTML = '';
+  }, 1500);
+});
+
+// REGISTER (AIM 3 validation)
+document.getElementById('registerBtn').addEventListener('click', () => {
+  const first   = document.getElementById('regFirst').value.trim();
+  const last    = document.getElementById('regLast').value.trim();
+  const email   = document.getElementById('regEmail').value.trim();
+  const pwd     = document.getElementById('regPassword').value;
+  const confirm = document.getElementById('regConfirm').value;
+  const terms   = document.getElementById('agreeTerms').checked;
+  let valid = true;
+
+  ['regFirstErr','regLastErr','regEmailErr','regPwdErr','regConfirmErr','regTermsErr'].forEach(hideErr);
+
+  if (!first || first.length < 2) { showErr('regFirstErr', 'First name required (min 2 chars).'); valid = false; }
+  if (!last  || last.length < 2)  { showErr('regLastErr',  'Last name required (min 2 chars).');  valid = false; }
+  if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { showErr('regEmailErr','Valid email required.'); valid = false; }
+  if (!pwd   || pwd.length < 8)   { showErr('regPwdErr',  'Password must be at least 8 characters.'); valid = false; }
+  if (pwd !== confirm)             { showErr('regConfirmErr','Passwords do not match.'); valid = false; }
+  if (!terms)                      { showErr('regTermsErr', 'You must agree to the terms.'); valid = false; }
+  if (!valid) return;
+
+  // AIM 5: string formatting
+  const fullName = `${first.charAt(0).toUpperCase()}${first.slice(1).toLowerCase()} ${last.charAt(0).toUpperCase()}${last.slice(1).toLowerCase()}`;
+  const domain   = email.split('@')[1]; // AIM 8: extract domain
+
+  document.getElementById('registerResult').innerHTML = `
+  <div class="alert alert-bookread-success">
+    <i class="bi bi-check-circle me-2"></i>
+    Account created for <strong>${fullName}</strong>! (${domain})
+  </div>`;
+  setTimeout(() => {
+    bootstrap.Modal.getInstance(document.getElementById('authModal')).hide();
+    document.querySelector('.btn-auth').textContent = first;
+    document.getElementById('registerResult').innerHTML = '';
+  }, 2000);
+});
+
+/* ═══════════════════════════════════════════════════
+   AIM 4 – DOM MANIPULATION
+═══════════════════════════════════════════════════ */
+// Show/hide shelf detail
+document.getElementById('toggleShelfDetail').addEventListener('click', function() {
+  const panel = document.getElementById('shelfDetail');
+  const hidden = panel.style.display === 'none';
+  panel.style.display = hidden ? '' : 'none';
+  this.textContent = hidden ? 'Hide Shelf Details' : 'Show Shelf Details';
+  this.style.background = hidden ? 'var(--brown)' : '';
+});
+
+// Toggle challenges panel (community page)
+document.getElementById('toggleChallenges').addEventListener('click', function() {
+  const p = document.getElementById('challengePanel');
+  const show = p.style.display === 'none';
+  p.style.display = show ? '' : 'none';
+  this.textContent = show ? 'Hide Challenges' : 'Show Challenges';
+});
+
+// Shelf filter (changes DOM text)
+function filterShelf(type) {
+  document.querySelectorAll('.shelf-tag').forEach(t => t.classList.remove('active'));
+  event.target.classList.add('active');
+  const msgs = { read:'Showing 42 read books', reading:'Showing 3 books in progress', want:'Showing 18 books on your wishlist', favorites:'Showing 9 favourites' };
+  addToShelf(msgs[type] || 'Shelf updated');
+}
+
+/* ═══════════════════════════════════════════════════
+   DARK / LIGHT MODE  (AIM 4 – DOM style manipulation)
+═══════════════════════════════════════════════════ */
+let isDark = false;
+function toggleDarkMode() {
+  isDark = !isDark;
+  document.body.classList.toggle('dark-mode', isDark);
+  const knob   = document.getElementById('darkToggleKnob');
+  const track  = document.getElementById('darkToggle');
+  const label  = document.getElementById('themeLabel');
+  if (isDark) {
+    knob.style.transform  = 'translateX(24px)';
+    knob.textContent      = '🌙';
+    knob.style.background = '#382110';
+    track.style.background = 'var(--amber)';
+    label.textContent     = 'Dark Mode';
+  } else {
+    knob.style.transform  = 'translateX(0)';
+    knob.textContent      = '☀️';
+    knob.style.background = '#fff';
+    track.style.background = 'var(--border)';
+    label.textContent     = 'Light Mode';
+  }
+}
+
+/* ═══════════════════════════════════════════════════
+   AIM 6 – jQuery EVENTS, HOVER, ANIMATIONS
+═══════════════════════════════════════════════════ */
+$(document).ready(function() {
+
+  // Dark / Light mode toggle
+  // (no swatch code — replaced)
+
+  // Book card hover – jQuery
+  $(document).on('mouseenter', '.book-card', function() {
+    $(this).find('.book-title').css({ color: 'var(--amber)', transition: 'color .2s' });
+  }).on('mouseleave', '.book-card', function() {
+    $(this).find('.book-title').css({ color: 'var(--brown)' });
+  });
+
+  // Quote button – jQuery click + animation
+  $('#newQuoteBtn').on('click', function() {
+    const q = QUOTES[Math.floor(Math.random() * QUOTES.length)];
+    $('#dailyQuote').fadeOut(200, function() {
+      $(this).text(`"${q.q}"`).fadeIn(300);
+      $(this).next('small').text(`— ${q.a}`);
+    });
+  });
+
+  // Discussion live input (AIM 6 – input event listener)
+  $('#discussInput').on('input', function() {
+    const txt = $(this).val().trim();
+    if (txt.length > 0) {
+      $('#discussPreview').slideDown(150);
+      $('#discussPreviewText').text(txt);
+    } else {
+      $('#discussPreview').slideUp(150);
+    }
+  });
+
+  // Post discussion (AIM 6 – click event)
+  $('#postDiscussion').on('click', function() {
+    const txt = $('#discussInput').val().trim();
+    if (!txt) return;
+    const newPost = $(`
+    <div class="mb-3 pb-3" style="border-bottom:1px solid var(--border);">
+      <div class="d-flex justify-content-between align-items-start mb-1">
+        <strong style="font-size:.9rem;">You</strong>
+        <small class="text-muted">Just now</small>
+      </div>
+      <p style="font-size:.88rem;margin:0;">${$('<div/>').text(txt).html()}</p>
+      <div class="mt-1"><button class="btn btn-sm btn-outline-secondary py-0" style="font-size:.75rem;"><i class="bi bi-hand-thumbs-up"></i> 0</button></div>
+    </div>`).hide();
+    $('#discussionPosts').prepend(newPost);
+    newPost.slideDown(300);
+    $('#discussInput').val('');
+    $('#discussPreview').slideUp(150);
+  });
+
+  // Hover books tip (AIM 6 – hover events)
+  const tipBooks = [
+    { label:'📗', tip:'Reading fiction improves empathy and theory of mind.' },
+    { label:'📘', tip:'Non-fiction readers retain 10% more info with active recall.' },
+    { label:'📕', tip:'Poetry readers score higher on emotional intelligence tests.' },
+    { label:'📙', tip:'Biography lovers are 35% more likely to pursue their goals.' },
+  ];
+  const hoverContainer = $('#hoverBooks');
+  tipBooks.forEach(b => {
+    const el = $(`<span style="font-size:2.2rem;cursor:pointer;transition:transform .15s;">${b.label}</span>`);
+    el.on('mouseenter', function() {
+      $(this).css('transform','scale(1.3)');
+      $('#hoverTip').text(b.tip).fadeIn(150);
+    }).on('mouseleave', function() {
+      $(this).css('transform','scale(1)');
+    });
+    hoverContainer.append(el);
+  });
+
+  // Render discussion posts
+  const posts = $('#discussionPosts');
+  DISCUSSIONS.forEach(d => {
+    const likeId = 'like_' + Math.random().toString(36).slice(2);
+    posts.append(`
+    <div class="mb-3 pb-3" style="border-bottom:1px solid var(--border);">
+      <div class="d-flex justify-content-between align-items-start mb-1">
+        <strong style="font-size:.9rem;">${d.user}</strong>
+        <small class="text-muted">${d.time}</small>
+      </div>
+      <p style="font-size:.88rem;margin:0;">${d.text}</p>
+      <div class="mt-1">
+        <button class="btn btn-sm btn-outline-secondary py-0" id="${likeId}" style="font-size:.75rem;" data-likes="${d.likes}">
+          <i class="bi bi-hand-thumbs-up"></i> ${d.likes}
+        </button>
+      </div>
+    </div>`);
+    // AIM 6: click event on dynamic element
+    $(document).on('click', `#${likeId}`, function() {
+      const n = parseInt($(this).data('likes')) + 1;
+      $(this).data('likes', n).html(`<i class="bi bi-hand-thumbs-up-fill"></i> ${n}`).css('background','var(--amber-light)');
+    });
+  });
+
+  // Hover on genre pills (AIM 6)
+  $(document).on('mouseenter', '.genre-pill', function() {
+    $(this).animate({ opacity: 0.7 }, 100);
+  }).on('mouseleave', '.genre-pill', function() {
+    $(this).animate({ opacity: 1 }, 100);
+  });
+});
+
+/* ═══════════════════════════════════════════════════
+   AIM 7 – jQuery AJAX (Random User API)
+═══════════════════════════════════════════════════ */
+$('#loadReadersBtn').on('click', function() {
+  const spinner = $('#loadReadersSpinner');
+  const results = $('#ajaxReaderResults');
+  spinner.removeClass('d-none');
+  results.html('');
+
+  $.ajax({
+    url: 'https://randomuser.me/api/?results=3&nat=us,gb,in',
+    method: 'GET',
+    success: function(data) {
+      spinner.addClass('d-none');
+      const users = data.results;
+      let html = '';
+      users.forEach(u => {
+        const genres = ['Mystery','Sci-Fi','Romance','Fiction','Biography'];
+        const genre  = genres[Math.floor(Math.random() * genres.length)];
+        const books  = Math.floor(Math.random() * 200) + 20;
+        html += `
+        <div class="user-card fade-up">
+          <img src="${u.picture.medium}" alt="${u.name.first}"/>
+          <div>
+            <div class="u-name">${u.name.first} ${u.name.last}</div>
+            <div class="u-loc"><i class="bi bi-geo-alt"></i> ${u.location.city}</div>
+            <div style="font-size:.75rem;color:var(--text-muted);">Loves ${genre} · ${books} books read</div>
+          </div>
+        </div>`;
+      });
+      results.html(html);
+    },
+    error: function() {
+      spinner.addClass('d-none');
+      results.html('<div class="alert alert-bookread-danger py-2">Could not load readers. Check your connection.</div>');
+    }
+  });
+});
+
+/* ─── Init ─── */
+renderHomeBooks();
+renderReviews();
+triggerReveal();
+
+// Populate review book picker
+(function() {
+  const sel = document.getElementById('reviewBookPicker');
+  if (!sel) return;
+  BOOKS_DB.forEach(b => {
+    const opt = document.createElement('option');
+    opt.value = b.id;
+    opt.textContent = `${b.title} — ${b.author}`;
+    sel.appendChild(opt);
+  });
+  sel.addEventListener('change', function() {
+    const b = BOOKS_DB.find(x => x.id == this.value);
+    if (!b) { document.getElementById('reviewCoverPreview').style.display = 'none'; return; }
+    document.getElementById('reviewTitle').value  = b.title;
+    document.getElementById('reviewAuthor').value = b.author;
+    document.getElementById('reviewPreviewImg').src   = b.cover || '';
+    document.getElementById('reviewPreviewTitle').textContent  = b.title;
+    document.getElementById('reviewPreviewAuthor').textContent = b.author;
+    document.getElementById('reviewPreviewGenre').innerHTML    = `<span class="genre-pill">${b.genre}</span> <small style="color:var(--text-muted);">${b.year}</small>`;
+    document.getElementById('reviewCoverPreview').style.display = b.cover ? '' : 'none';
+  });
+})();
+</script>
+</body>
+</html>
